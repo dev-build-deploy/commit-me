@@ -34,6 +34,8 @@ $ commit-me check
 
 > **NOTE**: highlighting and colors are applied in case your shell support this.
 
+_You can find more details in the [dedicated documentation](./docs/cli.md)_
+
 ### GitHub Action
 
 The GitHub Action will validate all commits as part of your current Pull Request.
@@ -63,6 +65,8 @@ This will result in output similar to:
 ![Example](./docs/images/action-example.png)
 
 In addition, annotations are added containing a non-compliance issue.
+
+_You can find more details in the [dedicated documentation](./docs/github-action.md)_
 
 ## Contributing
 
