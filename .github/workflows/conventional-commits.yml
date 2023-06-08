@@ -1,0 +1,27 @@
+# SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+---
+
+name: Conventional Commits
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  commit-message:
+    name: Conventional Commits Compliance
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run CommitMe
+        uses: dev-build-deploy/commit-me@v0
+        with:
+          token: ${{ github.token }}
