@@ -62,7 +62,7 @@ This will result in output similar to:
 
 ![Example](./docs/images/action-example.png)
 
-In addition, annotations are added to files containing a non-compliance issue.
+In addition, annotations are added containing a non-compliance issue.
 
 ## Contributing
 
