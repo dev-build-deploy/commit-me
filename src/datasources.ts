@@ -4,6 +4,7 @@ SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
 SPDX-License-Identifier: GPL-3.0-or-later
 */
 import simpleGit from "simple-git";
+import * as github from "@actions/github";
 
 /**
  * Commit information
@@ -63,19 +64,31 @@ class GitSource implements IDataSource {
 /**
  * GitHub data source for determining which commits need to be validated.
  */
-class CommitsSource implements IDataSource {
+class GitHubSource implements IDataSource {
   octokit: any;
-  commits: any;
 
-  constructor(octokit: any, commits: any) {
+  constructor(octokit: any) {
     this.octokit = octokit;
-    this.commits = commits;
   }
 
   public async getCommitMessages(): Promise<ICommit[]> {
-    // TODO: implement Octokit support
-    return [];
+    const commits = await this.octokit.rest.pulls.listCommits({
+      ...github.context.repo,
+      pull_number: github.context.payload.pull_request?.number ?? 0,
+    });
+    return commits.data.map((commit: any) => {
+      return {
+        hash: commit.sha,
+        date: commit.commit.author.date,
+        message: commit.commit.message.split("\n")[0],
+        body: "", // TODO: Validate commit body
+        author: {
+          name: commit.author.name,
+          email: commit.author.email,
+        },
+      } as ICommit;
+    });
   }
 }
 
-export { ICommit, IDataSource, GitSource, CommitsSource };
+export { ICommit, IDataSource, GitSource, GitHubSource };
