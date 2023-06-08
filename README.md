@@ -6,14 +6,14 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 # CommitMe
 
-CommitMe provides [multiple tools](#tooling) for validating commit messages against [Conventional Commits].
-
-## Tooling
-
-There are two main options available:
+CommitMe provides multiple tools for validating commit messages against [Conventional Commits], incl.
 
 * A CLI tool for managing your local (git) repository
-* A GitHub Action to validate your Pull Request/Repository contents
+* A GitHub Action to validate your Pull Request contents
+
+Both use the same [output format](#output-format) for expressing non-compliance issues.
+
+## Tools
 
 ### Command Line Interface
 
@@ -67,6 +67,29 @@ This will result in output similar to:
 In addition, annotations are added containing a non-compliance issue.
 
 _You can find more details in the [dedicated documentation](./docs/github-action.md)_
+
+## Output format
+
+CommitMe is using an output format derived from LLVMs [expressive diagnostics formatting](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#expressive-diagnostic-formatting);
+
+```
+2d9f21c2e2bb0f61ff88a99e5c0cb8d5771313c7:1:0: error: Commits MUST be prefixed with[...]
+^                                        ^ ^         ^
+|                                        | |         |
+|                                        | |         `-- Conventional Commits requirement
+|                                        | `-- Column bumber
+|                                        `-- Line number
+`-- Commit SHA                                   
+```
+
+> **NOTE**: The Conventional Commits requirement is truncated in the above example
+
+| Item | Description |
+| --- | --- |
+| `Commit SHA` | The commit hash of the commit containing non compliance issue |
+| `Line number` | Which line in the commit message contains the issue (**NOTE**: line 1 indicates the subject) |
+| `Column number` | Starting index of the non compliance issue |
+| `Conventional Commits requirement` | Full description taken from the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/#specification), with highlights indicating which parts are non-compliant |
 
 ## Contributing
 
