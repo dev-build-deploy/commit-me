@@ -3,6 +3,7 @@ SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
 
 SPDX-License-Identifier: GPL-3.0-or-later
 */
+
 import simpleGit from "simple-git";
 import * as github from "@actions/github";
 
@@ -37,8 +38,8 @@ interface IDataSource {
 class GitSource implements IDataSource {
   sourceBranch: string;
 
-  constructor(sourceBranch: string = "main") {
-    this.sourceBranch = sourceBranch;
+  constructor(baseBranch: string = "main") {
+    this.sourceBranch = baseBranch;
   }
 
   public async getCommitMessages(): Promise<ICommit[]> {
@@ -46,6 +47,7 @@ class GitSource implements IDataSource {
       from: this.sourceBranch,
       to: "HEAD",
     });
+
     return data.all.map((commit: any) => {
       return {
         hash: commit.hash,

@@ -23,11 +23,12 @@ program.name("commit-me").description("Conventional Commit message validation");
 program
   .command("check")
   .description("Checks whether your commit messagesare compliant with the Conventional Commit specification.")
-  .action(async () => {
+  .option("-b, --base-branch <branch>", "The base branch to compare the current branch with.")
+  .action(async options => {
     console.log("📄 CommitMe - Conventional Commit compliance validation");
     console.log("-------------------------------------------------------");
 
-    const datasource = new GitSource();
+    const datasource = new GitSource(options.baseBranch ?? "main");
     const commits = await datasource.getCommitMessages();
 
     let errorCount = 0;
