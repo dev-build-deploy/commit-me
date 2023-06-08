@@ -28,6 +28,9 @@ interface IValidationResult {
 const validate = (commits: datasources.ICommit[]): IValidationResult[] => {
   const validationResults: IValidationResult[] = [];
   for (const commit of commits) {
+    // Skip fixup commits
+    if (commit.message.startsWith("fixup!")) continue;
+
     const result: IValidationResult = {
       commit: commit,
       errors: [],
