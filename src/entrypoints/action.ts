@@ -15,12 +15,21 @@ import { RequirementError, parse } from "../conventional_commit";
 async function run(): Promise<void> {
   try {
     core.info("📄 CommitMe - Conventional Commit compliance validation");
-    core.info("-------------------------------------------------------");
 
+    if (github.context.eventName !== "pull_request") throw new Error("This action only works on pull requests.");
+
+    // Setting up the environment
     const token = core.getInput("token");
     const octokit = github.getOctokit(token);
     const datasource = new GitHubSource(octokit);
+
+    // Gathering commit message information
+    core.startGroup("🔎 Scanning Pull Request");
     const commits = await datasource.getCommitMessages();
+    commits.forEach(commit =>
+      core.info(`📄 ${commit.hash}: ${commit.message.substring(0, 77)}${commit.message.length > 80 ? "..." : ""}`)
+    );
+    core.endGroup();
 
     const errors: string[] = [];
     try {
@@ -29,12 +38,14 @@ async function run(): Promise<void> {
           parse(commit);
           core.info(`✅ ${commit.hash}`);
         } catch (error) {
-          core.startGroup(`❌ ${commit.hash}`)
+          core.startGroup(`❌ ${commit.hash}`);
           if (Array.isArray(error)) {
-            error.filter(e => e instanceof RequirementError).forEach(e => {
-              core.error(`❌ ${e.message}`)
-              errors.push(e.message)
-            });
+            error
+              .filter(e => e instanceof RequirementError)
+              .forEach(e => {
+                core.error(`❌ ${e.message}`);
+                errors.push(e.message);
+              });
           }
           core.endGroup();
         }
