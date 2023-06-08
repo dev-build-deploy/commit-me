@@ -93,7 +93,7 @@ CommitMe is using an output format derived from LLVMs [expressive diagnostics fo
 
 ## Contributing
 
-If you have suggestions for how reuse-me could be improved, or want to report a bug, open an issue! We'd love all and any contributions.
+If you have suggestions for how commit-me could be improved, or want to report a bug, open an issue! We'd love all and any contributions.
 
 For more, check out the [Contributing Guide](CONTRIBUTING.md).
 
