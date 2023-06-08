@@ -7,7 +7,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import * as core from "@actions/core";
 import * as github from "@actions/github";
 import { GitHubSource } from "../datasources";
-import { RequirementError, parse } from "../conventional_commit";
+import { validate } from "../validator";
 
 /**
  * Main entry point for the GitHub Action.
@@ -16,42 +16,39 @@ async function run(): Promise<void> {
   try {
     core.info("📄 CommitMe - Conventional Commit compliance validation");
 
-    if (github.context.eventName !== "pull_request") throw new Error("This action only works on pull requests.");
+    if (github.context.eventName !== "pull_request") {
+      core.setFailed("❌ This action only works on pull requests.");
+      return;
+    }
 
     // Setting up the environment
     const token = core.getInput("token");
     const octokit = github.getOctokit(token);
     const datasource = new GitHubSource(octokit);
 
-    // Gathering commit message information
     core.startGroup("🔎 Scanning Pull Request");
+    let errorCount = 0;
+
+    // Gathering commit message information
     const commits = await datasource.getCommitMessages();
-    commits.forEach(commit =>
-      core.info(`📄 ${commit.hash}: ${commit.message.substring(0, 77)}${commit.message.length > 80 ? "..." : ""}`)
-    );
+    const results = validate(commits);
+
+    // Outputting validation results
+    for (const commit of results) {
+      core.info(
+        `${commit.errors.length === 0 ? "✅" : "❌"} ${commit.commit.hash}: ${commit.commit.message.substring(0, 77)}${
+          commit.commit.message.length > 80 ? "..." : ""
+        }`
+      );
+      commit.errors.forEach(error => core.error(error, { title: "Conventional Commit Compliance" }));
+      errorCount += commit.errors.length;
+    }
     core.endGroup();
 
-    const errors: string[] = [];
-    try {
-      commits.forEach(commit => {
-        try {
-          parse(commit);
-          core.info(`✅ ${commit.hash}`);
-        } catch (error) {
-          core.startGroup(`❌ ${commit.hash}`);
-          if (Array.isArray(error)) {
-            error
-              .filter(e => e instanceof RequirementError)
-              .forEach(e => {
-                core.error(`❌ ${e.message}`);
-                errors.push(e.message);
-              });
-          }
-          core.endGroup();
-        }
-      });
-    } catch (error) {
-      core.error(`${error}`);
+    if (errorCount === 0) {
+      core.info(`✅ All your commits are compliant with Conventional Commit.`);
+    } else {
+      core.setFailed(`❌ Found ${errorCount} Conventional Commit compliance issues.`);
     }
   } catch (ex) {
     core.setFailed((ex as Error).message);

@@ -369,4 +369,4 @@ const parse = (commit: datasources.ICommit): IConventionalCommit => {
 
 const rules: IRequirements[] = [new Requirement1(), new Requirement4(), new Requirement5()];
 
-export { parse, RequirementError };
+export { parse, RequirementError, CommitExpressiveMessage };
