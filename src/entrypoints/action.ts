@@ -19,7 +19,6 @@ const determineLabel = async (commits: IValidationResult[]): Promise<"breaking" 
   let type: "breaking" | "feature" | "fix" | undefined;
 
   for (const commit of commits) {
-    console.log(JSON.stringify(commit, null, 2));
     if (commit.conventionalCommit?.breaking) return "breaking";
     switch (commit.conventionalCommit?.type) {
       case "feat":
@@ -60,7 +59,6 @@ async function run(): Promise<void> {
 
     // Updating the pull request label
     const label = await determineLabel(results);
-    console.log(label);
     if (label !== undefined) await updatePullRequestLabels(label);
 
     // Outputting validation results
