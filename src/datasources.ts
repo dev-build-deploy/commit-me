@@ -74,11 +74,15 @@ class GitHubSource implements IDataSource {
   }
 
   public async getCommitMessages(): Promise<ICommit[]> {
+    const pullRequestNumber = github.context.payload.pull_request?.number;
+    if (!pullRequestNumber) throw new Error("This action only works on pull requests.");
+
     const commits = await this.octokit.rest.pulls.listCommits({
       ...github.context.repo,
-      pull_number: github.context.payload.pull_request?.number ?? 0,
+      pull_number: pullRequestNumber,
     });
-    return commits.data.map((commit: any) => {
+
+    const result = commits.data.map((commit: any) => {
       return {
         hash: commit.sha,
         date: commit.commit.author.date,
@@ -90,6 +94,23 @@ class GitHubSource implements IDataSource {
         },
       } as ICommit;
     });
+
+    const { data: pullRequest } = await this.octokit.rest.pulls.get({
+      ...github.context.repo,
+      pull_number: pullRequestNumber,
+    });
+
+    result.push({
+      hash: `#${pullRequest.number}`,
+      message: pullRequest.title,
+      body: pullRequest.body,
+      author: {
+        name: pullRequest.user.login,
+        email: "", // TODO: Consider what to do with this metadata
+      },
+    });
+
+    return result;
   }
 }
 
