@@ -49,6 +49,10 @@ The GitHub Action provides:
 name: Conventional Commits
 on:
   pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
 
 permissions:
   pull-request: write
@@ -70,13 +74,13 @@ This will result in output similar to:
 
 In addition;
 * Annotations are added containing a non-compliance issue.
-* A [label](./docs/github-action.md#labels) (`breaking`, `feature` or `fix`) is added to your Pull Request.
+* A [label](./docs/github-action.md#pull-request-labels) (`breaking`, `feature` or `fix`) is added to your Pull Request.
 
 _You can find more details in the [dedicated documentation](./docs/github-action.md)_
 
 ## Output format
 
-CommitMe is using an output format derived from LLVMs [expressive diagnostics formatting](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#expressive-diagnostic-formatting);
+CommitMe is using an output format derived from LLVM's [expressive diagnostics formatting](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#expressive-diagnostic-formatting);
 
 ```
 2d9f21c2e2bb0f61ff88a99e5c0cb8d5771313c7:1:0: error: Commits MUST be prefixed with[...]
