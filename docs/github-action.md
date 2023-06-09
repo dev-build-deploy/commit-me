@@ -16,8 +16,6 @@ You can scan your [pull requests](#pull-request-scanning) for determining compli
 
 You can scan the commits in your pull request for compliance with the [Conventional Commits] specification.
 
-#### Workflow
-
 ```yaml
 name: Conventional Commits
 on:
@@ -41,7 +39,7 @@ jobs:
           update-labels: true  # OPTIONAL; manages labels on your Pull Request, defaults to `true`
 ```
 
-#### Event triggers & activities
+### Event triggers & activities
 
 There are two main triggers relevant for validate your Pull Requests:
 
@@ -55,21 +53,21 @@ In addition, we recommend the following activity types:
 | `edited` | Validates any change to the Pull Requests title |
 | `synchronize` | Validate all subsequent commits added to the (open) Pull Request |
 
-#### Inputs
+### Inputs
 
 | Name | Required | Description |
 | --- | --- | --- |
 | `token` | *YES* | GitHub token needed to access your commits in your pull request |
 | `update-labels` | *NO* | Allow CommitMe to manage [labels](#pull-request-labels) based on the [Conventional Commits] metadata, required `write` permissions for `pull-request`, defaults to `true` |
 
-#### Permissions
+### Permissions
 
 | Name | Value | Comment |
 | --- | --- | --- |
 | `pull-request` | `read` | Access to read pull request data, including associated commits |
 | `pull-request` | `write` | Only required when the `update-labels`-input is set to `true`, allows for updating labels associated with the [Conventional Commits] in your Pull Request |
 
-### Pull Request Labels
+## Pull Request Labels
 
 CommitMe is able to manage labels on your Pull Request based on the Conventional Commit metadata:
 
