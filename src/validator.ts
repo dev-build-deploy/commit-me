@@ -16,6 +16,7 @@ import { CommitExpressiveMessage } from "./conventional_commit";
  */
 interface IValidationResult {
   commit: datasources.ICommit;
+  conventionalCommit?: conventionalCommit.IConventionalCommit;
   errors: string[];
 }
 
@@ -37,7 +38,7 @@ const validate = (commits: datasources.ICommit[]): IValidationResult[] => {
     };
 
     try {
-      conventionalCommit.parse(commit);
+      result.conventionalCommit = conventionalCommit.parse(commit);
     } catch (error) {
       if (Array.isArray(error)) {
         error
@@ -55,4 +56,4 @@ const validate = (commits: datasources.ICommit[]): IValidationResult[] => {
   return validationResults;
 };
 
-export { validate };
+export { validate, IValidationResult };
