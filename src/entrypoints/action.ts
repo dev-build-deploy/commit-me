@@ -6,9 +6,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 import * as core from "@actions/core";
 import * as github from "@actions/github";
+import * as repository from "../repository";
 import { GitHubSource } from "../datasources";
-import { IValidationResult, validate } from "../validator";
+import { IValidationResult, validateCommits, validatePullRequest } from "../validator";
 import { updatePullRequestLabels } from "../github";
+import { IConventionalCommit } from "../conventional_commit";
 
 /**
  * Determines the label to be applied to the pull request.
@@ -20,17 +22,31 @@ const determineLabel = async (commits: IValidationResult[]): Promise<"breaking" 
 
   for (const commit of commits) {
     if (commit.conventionalCommit?.breaking) return "breaking";
-    switch (commit.conventionalCommit?.type) {
-      case "feat":
-        type = "feature";
-        break;
-      case "fix":
-        if (type !== "feature") type = "fix";
-        break;
-    }
+    if (commit.conventionalCommit?.type === "feat") type = "feature";
+    else if (commit.conventionalCommit?.type === "fix" && type !== "feature") type = "fix";
   }
 
   return type;
+};
+
+/**
+ * Reports the error messages to the GitHub Action log.
+ * @param results The validation results to report
+ * @returns The total number of errors reported
+ */
+const reportErrorMessages = (results: IValidationResult[]) => {
+  let errorCount = 0;
+
+  for (const commit of results) {
+    core.info(
+      `${commit.errors.length === 0 ? "✅" : "❌"} ${commit.commit.hash}: ${commit.commit.message.substring(0, 77)}${
+        commit.commit.message.length > 80 ? "..." : ""
+      }`
+    );
+    commit.errors.forEach(error => core.error(error, { title: "Conventional Commit Compliance" }));
+    errorCount += commit.errors.length;
+  }
+  return errorCount;
 };
 
 /**
@@ -40,45 +56,52 @@ async function run(): Promise<void> {
   try {
     core.info("📄 CommitMe - Conventional Commit compliance validation");
 
-    if (github.context.eventName !== "pull_request") {
+    if (!["pull_request", "pull_request_target"].includes(github.context.eventName)) {
       core.setFailed("❌ This action only works on pull requests.");
       return;
     }
 
     // Setting up the environment
-    const token = core.getInput("token");
-    const octokit = github.getOctokit(token);
-    const datasource = new GitHubSource(octokit);
+    core.startGroup("📝 Checking repository configuration");
+    await repository.checkConfiguration();
+    const hasRebaseMerge = await repository.hasRebaseMerge();
 
-    core.startGroup("🔎 Scanning Pull Request");
-    let errorCount = 0;
-
-    // Gathering commit message information
+    const datasource = new GitHubSource(!hasRebaseMerge);
     const commits = await datasource.getCommitMessages();
-    const results = validate(commits);
-
-    // Updating the pull request label
-    const label = await determineLabel(results);
-    if (label !== undefined) await updatePullRequestLabels(label);
-
-    // Outputting validation results
-    for (const commit of results) {
-      core.info(
-        `${commit.errors.length === 0 ? "✅" : "❌"} ${commit.commit.hash}: ${commit.commit.message.substring(0, 77)}${
-          commit.commit.message.length > 80 ? "..." : ""
-        }`
-      );
-      commit.errors.forEach(error => core.error(error, { title: "Conventional Commit Compliance" }));
-      errorCount += commit.errors.length;
-    }
     core.endGroup();
 
+    // Gathering commit message information
+    const pullrequest = await datasource.getPullRequest();
+    const resultCommits = hasRebaseMerge ? validateCommits(commits) : [];
+    const resultPullrequest = validatePullRequest(
+      pullrequest,
+      resultCommits
+        .map(commit => commit.conventionalCommit as IConventionalCommit)
+        .filter(commit => commit !== undefined)
+    );
+
+    core.startGroup(`🔎 Scanning Pull Request`);
+    let errorCount = reportErrorMessages([resultPullrequest]);
+    core.endGroup();
+
+    if (hasRebaseMerge) {
+      core.startGroup("🔎 Scanning Commits associated with Pull Request");
+      errorCount += reportErrorMessages(resultCommits);
+      core.endGroup();
+    }
+
     if (errorCount > 0) {
-      core.setFailed(`❌ Found ${errorCount} Conventional Commit compliance issues.`);
+      core.setFailed(`❌ Found ${errorCount} Conventional Commits compliance issues.`);
       return;
     }
 
-    core.info(`✅ All your commits are compliant with Conventional Commit.`);
+    // Updating the pull request label
+    if (core.getBooleanInput("update-labels") === true) {
+      const label = await determineLabel([resultPullrequest, ...resultCommits]);
+      if (label !== undefined) await updatePullRequestLabels(label);
+    }
+
+    core.info(`✅ Your Pull Request is compliant with Conventional Commits.`);
   } catch (ex) {
     core.setFailed((ex as Error).message);
   }

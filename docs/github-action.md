@@ -10,6 +10,15 @@ You can scan your [pull requests](#pull-request-scanning) for determining compli
 
 ![Example](./images/action-example.png)
 
+## Validation strategies
+
+Currently there are two distinct [Conventional Commits] validation strategies implemented based on the allowed merge strategies in your repository:
+
+- `Allow rebase merge`: Validate the Pull Request title and all associated commits _(default behavior)_.
+- `Do not allow rebase merge`: **ONLY** validate the Pull Request title.
+
+The `contents: write` permission needs to be set in order for this detection to work.
+
 ## Workflows
 
 ### Pull Request scanning
@@ -26,6 +35,7 @@ on:
       - synchronize
 
 permissions:
+  contents: write
   pull-request: write
 
 jobs:
@@ -51,7 +61,7 @@ In addition, we recommend the following activity types:
 | --- | --- |
 | `opened` | Validates all commits in the source branch of your Pull Request upon opening the PR |
 | `edited` | Validates any change to the Pull Requests title |
-| `synchronize` | Validate all subsequent commits added to the (open) Pull Request |
+| `synchronize` | Validate all subsequent commits added to the (open) Pull Request. This is only required in case rebase merges are enabled on the target repository. |
 
 ### Inputs
 
@@ -66,6 +76,7 @@ In addition, we recommend the following activity types:
 | --- | --- | --- |
 | `pull-request` | `read` | Access to read pull request data, including associated commits |
 | `pull-request` | `write` | Only required when the `update-labels`-input is set to `true`, allows for updating labels associated with the [Conventional Commits] in your Pull Request |
+| `contents` | `write` | This permission is required in order to determine whether this repository allows rebase merges (see: [validation strategies](#validation-strategies)) |
 
 ## Pull Request Labels
 
