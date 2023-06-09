@@ -9,9 +9,17 @@ SPDX-License-Identifier: GPL-3.0-or-later
 CommitMe provides multiple tools for validating commit messages against [Conventional Commits], incl.
 
 * A CLI tool for managing your local (git) repository
-* A GitHub Action to validate your Pull Request contents
+* A GitHub Action to validate your Pull Request contents, incl:
+  * Managing [labels](./docs/github-action.md#pull-request-labels) in your Pull Request
+  * Two [validation strategies](./docs/github-action.md#validation-strategies) (Pull Request title only, Pull Request title _and_ associated commits) based on your repositories merge options
 
 Both use the same [output format](#output-format) for expressing non-compliance issues.
+
+## Specification
+
+In addition to the [Conventional Commits] specification, an [extended Pull Request specification](./docs/specifications.md#extended-pull-request-specification) is added to ensure best-in-class integration with the [GitHub Action](./docs/github-action.md).
+
+_Please refer to the [dedicated documentation](./docs/specifications.md) for more details._
 
 ## Tools
 
@@ -55,7 +63,8 @@ on:
       - synchronize
 
 permissions:
-  pull-request: write
+  contents: write  # OPTIONAL; needed to determine merge strategies
+  pull-request: write  # OPTIONAL; needed to manage labels
 
 jobs:
   commit-me:
@@ -109,6 +118,7 @@ For more, check out the [Contributing Guide](CONTRIBUTING.md).
 
 ## License
 
-[GPL-3.0-or-later AND CC0-1.0](LICENSE) © 2023 Kevin de Jong \<monkaii@hotmail.com\>
+- [GPL-3.0-or-later, CC0-1.0](LICENSE) © 2023 Kevin de Jong \<monkaii@hotmail.com\>
+- [CC-BY-3.0](LICENSE) © 2023 Free Software Foundation Europe e.V.
 
 [Conventional Commits]: https://www.conventionalcommits.org/en/v1.0.0/

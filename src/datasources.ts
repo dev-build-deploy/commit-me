@@ -6,19 +6,9 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 import simpleGit from "simple-git";
 import * as github from "@actions/github";
-
-/**
- * Commit information
- * @interface ICommit
- * @member hash The commit hash
- * @member message The commit message
- * @member body The commit body
- */
-interface ICommit {
-  hash: string;
-  message: string;
-  body: string;
-}
+import * as core from "@actions/core";
+import assert from "assert";
+import { ICommit } from "./conventional_commit";
 
 /** DataSource abstraction interface
  * @interface IDataSource
@@ -58,39 +48,47 @@ class GitSource implements IDataSource {
  * GitHub data source for determining which commits need to be validated.
  */
 class GitHubSource implements IDataSource {
-  octokit: any;
+  prTitleOnly: boolean;
 
-  constructor(octokit: any) {
-    this.octokit = octokit;
+  constructor(prTitleOnly: boolean) {
+    this.prTitleOnly = prTitleOnly;
+  }
+
+  public async getPullRequest(): Promise<ICommit> {
+    const octokit = github.getOctokit(core.getInput("token"));
+    const pullRequestNumber = github.context.payload.pull_request?.number;
+    assert(pullRequestNumber);
+
+    const { data: pullRequest } = await octokit.rest.pulls.get({
+      ...github.context.repo,
+      pull_number: pullRequestNumber,
+    });
+    return {
+      hash: `#${pullRequest.number}`,
+      message: pullRequest.title,
+      body: pullRequest.body ?? "", // TODO: Validate pull request body
+    };
   }
 
   public async getCommitMessages(): Promise<ICommit[]> {
+    const octokit = github.getOctokit(core.getInput("token"));
     const pullRequestNumber = github.context.payload.pull_request?.number;
-    if (!pullRequestNumber) throw new Error("This action only works on pull requests.");
+    assert(pullRequestNumber);
 
-    const commits = await this.octokit.rest.pulls.listCommits({
+    const commits = await octokit.rest.pulls.listCommits({
       ...github.context.repo,
       pull_number: pullRequestNumber,
     });
 
-    const result = commits.data.map((commit: any) => {
-      return {
-        hash: commit.sha,
-        message: commit.commit.message.split("\n")[0],
-        body: "", // TODO: Validate commit body
-      } as ICommit;
-    });
-
-    const { data: pullRequest } = await this.octokit.rest.pulls.get({
-      ...github.context.repo,
-      pull_number: pullRequestNumber,
-    });
-
-    result.push({
-      hash: `#${pullRequest.number}`,
-      message: pullRequest.title,
-      body: pullRequest.body,
-    });
+    const result = this.prTitleOnly
+      ? []
+      : commits.data.map((commit: any) => {
+          return {
+            hash: commit.sha,
+            message: commit.commit.message.split("\n")[0],
+            body: "", // TODO: Validate commit body
+          };
+        });
 
     return result;
   }

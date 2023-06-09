@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 */
 
 import * as commit from "../src/conventional_commit";
+import * as requirements from "../src/requirements";
 
 const removeColors = (message: string) => {
   return message.replace(/\x1b\[[0-9;]*m/g, "");
@@ -14,12 +15,7 @@ const validateRequirement = (message: string, expected: string) => {
   const msg = {
     hash: "1234567890",
     message: message,
-    date: "2021-01-01",
     body: "",
-    author: {
-      name: "Kevin de Jong",
-      email: "monkaii@hotmail.com",
-    },
   };
 
   let debugOutput: string[] = [];
@@ -30,7 +26,7 @@ const validateRequirement = (message: string, expected: string) => {
     if (!Array.isArray(errors)) throw errors;
     let found = false;
     for (const error of errors) {
-      if (!(error instanceof commit.RequirementError)) throw error;
+      if (!(error instanceof requirements.RequirementError)) throw error;
       debugOutput.push(error.toString());
       if (!found && removeColors(error.toString()).includes(expected)) found = true;
     }
@@ -64,12 +60,7 @@ describe("validate", () => {
         commit.parse({
           hash: "1234567890",
           message: subject,
-          date: "2021-01-01",
           body: "",
-          author: {
-            name: "Kevin de Jong",
-            email: "monkaii@hotmail.com",
-          },
         })
       ).not.toThrow();
     }

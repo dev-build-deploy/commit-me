@@ -8,7 +8,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 import { Command } from "commander";
 import { GitSource } from "../datasources";
-import { validate } from "../validator";
+import { validateCommits } from "../validator";
 
 const program = new Command();
 
@@ -32,7 +32,7 @@ program
     const commits = await datasource.getCommitMessages();
 
     let errorCount = 0;
-    const results = validate(commits);
+    const results = validateCommits(commits);
 
     for (const commit of results) {
       console.log(
