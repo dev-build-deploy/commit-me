@@ -24,7 +24,7 @@ on:
   pull_request:
 
 permissions:
-  pull-request: read
+  pull-request: write
 
 jobs:
   commit-me:
@@ -34,18 +34,33 @@ jobs:
       - uses: dev-build-deploy/commit-me@v0
         with:
           token: ${{ github.token }}
+          update-labels: true  # OPTIONAL; manages labels on your Pull Request, defaults to `true`
 ```
+
+#### Labels
+
+CommitMe is able to manage labels on your Pull Request based on the Conventional Commit metadata:
+
+| Label | Description |
+| --- | --- |
+| `breaking` | One of the commits in your Pull Request contains a breaking change indicator (`!`) |
+| `feature` | One of the commits in your Pull Request uses `feat:` as type |
+| `fix` | One of the commits in your Pull Request uses `fix:` as type |
+
+> **NOTE**: CommitMe will remove any of the above labels from the Pull Request if no longer applicable.
 
 ### Inputs
 
 | Name | Required | Description |
 | --- | --- | --- |
 | `token` | *YES* | GitHub token needed to access your commits in your pull request |
+| `update-labels` | *NO* | Allow CommitMe to manage [labels](#labels) based on the [Conventional Commits] metadata, required `write` permissions for `pull-request`, defaults to `true` |
 
 ### Permissions
 
 | Name | Value | Comment |
 | --- | --- | --- |
-| `pull-requests` | `read` | Access to read pull request data, including associated commits |
+| `pull-request` | `read` | Access to read pull request data, including associated commits |
+| `pull-request` | `write` | Only required when the `update-labels`-input is set to `true`, allows for updating labels associated with the [Conventional Commits] in your Pull Request |
 
 [Conventional Commits]: https://www.conventionalcommits.org/en/v1.0.0/

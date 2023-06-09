@@ -7,7 +7,32 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import * as core from "@actions/core";
 import * as github from "@actions/github";
 import { GitHubSource } from "../datasources";
-import { validate } from "../validator";
+import { IValidationResult, validate } from "../validator";
+import { updatePullRequestLabels } from "../github";
+
+/**
+ * Determines the label to be applied to the pull request.
+ * @param commits The validated commits to determine the label from
+ * @returns The label to be applied to the pull request ("breaking", "feature", "fix" or undefined)
+ */
+const determineLabel = async (commits: IValidationResult[]): Promise<"breaking" | "feature" | "fix" | undefined> => {
+  let type: "breaking" | "feature" | "fix" | undefined;
+
+  for (const commit of commits) {
+    console.log(JSON.stringify(commit, null, 2));
+    if (commit.conventionalCommit?.breaking) return "breaking";
+    switch (commit.conventionalCommit?.type) {
+      case "feat":
+        type = "feature";
+        break;
+      case "fix":
+        if (type !== "feature") type = "fix";
+        break;
+    }
+  }
+
+  return type;
+};
 
 /**
  * Main entry point for the GitHub Action.
@@ -33,6 +58,11 @@ async function run(): Promise<void> {
     const commits = await datasource.getCommitMessages();
     const results = validate(commits);
 
+    // Updating the pull request label
+    const label = await determineLabel(results);
+    console.log(label);
+    if (label !== undefined) await updatePullRequestLabels(label);
+
     // Outputting validation results
     for (const commit of results) {
       core.info(
@@ -45,11 +75,12 @@ async function run(): Promise<void> {
     }
     core.endGroup();
 
-    if (errorCount === 0) {
-      core.info(`✅ All your commits are compliant with Conventional Commit.`);
-    } else {
+    if (errorCount > 0) {
       core.setFailed(`❌ Found ${errorCount} Conventional Commit compliance issues.`);
+      return;
     }
+
+    core.info(`✅ All your commits are compliant with Conventional Commit.`);
   } catch (ex) {
     core.setFailed((ex as Error).message);
   }

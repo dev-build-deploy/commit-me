@@ -38,7 +38,10 @@ _You can find more details in the [dedicated documentation](./docs/cli.md)_
 
 ### GitHub Action
 
-The GitHub Action will validate all commits as part of your current Pull Request.
+The GitHub Action provides:
+
+* Validation of all commits as part of your current Pull Request.
+* Ability to update labels on your Pull Request (`feature`, `fix`, `breaking`)
 
 ### Example usage
 
@@ -48,7 +51,7 @@ on:
   pull_request:
 
 permissions:
-  pull-request: read
+  pull-request: write
 
 jobs:
   commit-me:
@@ -58,13 +61,16 @@ jobs:
       - uses: dev-build-deploy/commit-me@v0
         with:
           token: ${{ github.token }}
+          update-labels: true  # OPTIONAL; manages labels on your Pull Request, defaults to `true`
 ```
 
 This will result in output similar to:
 
 ![Example](./docs/images/action-example.png)
 
-In addition, annotations are added containing a non-compliance issue.
+In addition;
+* Annotations are added containing a non-compliance issue.
+* A [label](./docs/github-action.md#labels) (`breaking`, `feature` or `fix`) is added to your Pull Request.
 
 _You can find more details in the [dedicated documentation](./docs/github-action.md)_
 

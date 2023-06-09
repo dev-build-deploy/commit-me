@@ -43,7 +43,7 @@ interface IConventionalCommit {
   type: string;
   scope?: string;
   breaking: boolean;
-  subject: string;
+  description: string;
 }
 
 /**
@@ -337,7 +337,7 @@ const validate = (commit: IRawConventionalCommit): IConventionalCommit => {
     type: commit.type,
     scope: commit.scope,
     breaking: commit.breaking === "!",
-    subject: commit.description,
+    description: commit.description,
   };
 };
 
@@ -369,4 +369,4 @@ const parse = (commit: datasources.ICommit): IConventionalCommit => {
 
 const rules: IRequirements[] = [new Requirement1(), new Requirement4(), new Requirement5()];
 
-export { parse, RequirementError, CommitExpressiveMessage };
+export { parse, RequirementError, CommitExpressiveMessage, IConventionalCommit };
