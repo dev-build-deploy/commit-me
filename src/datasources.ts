@@ -11,17 +11,13 @@ import * as github from "@actions/github";
  * Commit information
  * @interface ICommit
  * @member hash The commit hash
- * @member date The commit date
  * @member message The commit message
  * @member body The commit body
- * @member author The commit author name (.name) and email (.email)
  */
 interface ICommit {
   hash: string;
-  date: string;
   message: string;
   body: string;
-  author: { name: string; email: string };
 }
 
 /** DataSource abstraction interface
@@ -51,13 +47,8 @@ class GitSource implements IDataSource {
     return data.all.map((commit: any) => {
       return {
         hash: commit.hash,
-        date: commit.date,
         message: commit.message,
         body: commit.body,
-        author: {
-          name: commit.author_name,
-          email: commit.author_email,
-        },
       } as ICommit;
     });
   }
@@ -85,13 +76,8 @@ class GitHubSource implements IDataSource {
     const result = commits.data.map((commit: any) => {
       return {
         hash: commit.sha,
-        date: commit.commit.author.date,
         message: commit.commit.message.split("\n")[0],
         body: "", // TODO: Validate commit body
-        author: {
-          name: commit.author.name,
-          email: commit.author.email,
-        },
       } as ICommit;
     });
 
@@ -104,10 +90,6 @@ class GitHubSource implements IDataSource {
       hash: `#${pullRequest.number}`,
       message: pullRequest.title,
       body: pullRequest.body,
-      author: {
-        name: pullRequest.user.login,
-        email: "", // TODO: Consider what to do with this metadata
-      },
     });
 
     return result;
