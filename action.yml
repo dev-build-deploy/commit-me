@@ -20,6 +20,10 @@ inputs:
     description: 'Update labels on Pull Request (`breaking`, `feature` or `fix`)'
     required: false
     default: true
+  
+  include-commits:
+    description: 'Include commits associated with the Pull Request; by default we use the repository configuration settings to determine this value.'
+    required: false
 
 runs:
   using: 'node16'

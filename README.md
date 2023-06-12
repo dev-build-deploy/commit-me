@@ -75,6 +75,7 @@ jobs:
         with:
           token: ${{ github.token }}
           update-labels: true  # OPTIONAL; manages labels on your Pull Request, defaults to `true`
+          include-commits: true  # OPTIONAL; includes commits associated with your Pull Request
 ```
 
 This will result in output similar to:

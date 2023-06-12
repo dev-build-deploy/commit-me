@@ -16,6 +16,16 @@ import * as core from "@actions/core";
 const checkConfiguration = async () => {
   const repository = await getRepository();
 
+  if (
+    repository.allow_merge_commit === undefined ||
+    repository.allow_squash_merge === undefined ||
+    repository.allow_rebase_merge === undefined
+  ) {
+    throw new Error(
+      "❌ CommitMe is not configured correctly. Please provide either:\n - The `contents: write` permission, or\n - Use the `include-commits` input parameter."
+    );
+  }
+
   if (repository.allow_merge_commit) {
     core.info(
       // @ts-ignore - 'merge_commit_title' is a valid value, but not in the type definition
