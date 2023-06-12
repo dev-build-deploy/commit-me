@@ -4,6 +4,7 @@ SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
 SPDX-License-Identifier: GPL-3.0-or-later
 */
 
+import { Configuration } from "../src/configuration";
 import * as commit from "../src/conventional_commit";
 import * as requirements from "../src/requirements";
 
@@ -42,7 +43,7 @@ const validateRequirement = (message: string, expected: string) => {
 /**
  * Validates that the commit message is a valid conventional commit.
  */
-describe("validate", () => {
+describe("Conventional Commits specification", () => {
   test("Valid Conventional Commit subjects", () => {
     for (const subject of [
       "feat: add new feature",
@@ -66,7 +67,7 @@ describe("validate", () => {
     }
   });
 
-  test("Requirement1", () => {
+  test("CC-01", () => {
     for (const message of [
       "(scope): missing type",
       ": missing type",
@@ -92,7 +93,7 @@ describe("validate", () => {
     }
   });
 
-  test("Requirement4", () => {
+  test("CC-04", () => {
     for (const message of [
       "feat(): empty scope",
       "feat(a noun): scope with spacing",
@@ -107,12 +108,35 @@ describe("validate", () => {
     }
   });
 
-  test("Requirement5", () => {
+  test("CC-05", () => {
     for (const message of ["feat:", "feat: ", "feat:    ", "feat:   too many spaces after terminal colon"]) {
       validateRequirement(
         message,
         "A description MUST immediately follow the colon and space after the type/scope prefix. The description is a short summary of the code changes, e.g., fix: array parsing issue when multiple spaces were contained in string."
       );
+    }
+  });
+});
+
+describe("Extended Conventional Commits specification", () => {
+  beforeAll(() => {
+    const config = Configuration.getInstance();
+    config.scopes = ["action", "cli"];
+    config.types = ["feat", "fix"];
+  });
+
+  test("EC-01", () => {
+    for (const message of ["feat(wrong): unknown scope", "feat: no scope"]) {
+      validateRequirement(
+        message,
+        "The scope is REQUIRED and the value MUST be one of the configured values (action, cli)."
+      );
+    }
+  });
+
+  test("EC-02", () => {
+    for (const message of ["chore: unknown type", "docs(scope)!: unknown type"]) {
+      validateRequirement(message, "The type MUST be one of the configured values (feat, fix).");
     }
   });
 });

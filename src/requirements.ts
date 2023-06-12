@@ -6,6 +6,7 @@ SPDX-License-Identifier: CC-BY-3.0
 */
 
 import { IConventionalCommit, IConventionalCommitElement, IRawConventionalCommit } from "./conventional_commit";
+import { Configuration } from "./configuration";
 import { ExpressiveMessage } from "./logging";
 
 /**
@@ -193,6 +194,48 @@ class CC05 implements ICommitRequirement {
 }
 
 /**
+ * The scope is REQUIRED and the value MUST be one of the configured values (...)
+ */
+class EC01 implements ICommitRequirement {
+  id = "EC-01";
+  description = "The scope is REQUIRED and the value MUST be one of the configured values (...)";
+
+  validate(commit: IRawConventionalCommit) {
+    const config = Configuration.getInstance();
+
+    this.description = `The scope is REQUIRED and the value MUST be one of the configured values (${config?.scopes?.join(
+      ", "
+    )}).`;
+    if (config.scopes === undefined || config.scopes?.length === 0) return;
+    if (commit.scope.value !== undefined && config.scopes.includes(commit.scope.value.replace(/[()]+/g, ""))) return;
+
+    const error = new RequirementError(this, commit);
+    error.addError(["scope is REQUIRED", "and", "MUST be one of the configured values"], "scope");
+    throw error;
+  }
+}
+
+/**
+ * The type MUST be one of the configured values (...)
+ */
+class EC02 implements ICommitRequirement {
+  id = "EC-02";
+  description = "The type MUST be one of the configured values (...)";
+
+  validate(commit: IRawConventionalCommit) {
+    const config = Configuration.getInstance();
+
+    this.description = `TThe type MUST be one of the configured values (${config?.types?.join(", ")}).`;
+    if (config.types === undefined || config.types?.length === 0) return;
+    if (commit.type.value !== undefined && config.types.includes(commit.type.value)) return;
+
+    const error = new RequirementError(this, commit);
+    error.addError("type MUST be one of the configured values", "type");
+    throw error;
+  }
+}
+
+/**
  * A Pull Request title MUST correlate with a Semantic Versioning identifier (`MAJOR`, `MINOR`,
  * or `PATCH`) with the same or higher precedence than its associated commits.
  */
@@ -228,7 +271,7 @@ class PR01 implements IPullRequestRequirement {
   }
 }
 
-const commitRules: ICommitRequirement[] = [new CC01(), new CC04(), new CC05()];
+const commitRules: ICommitRequirement[] = [new CC01(), new CC04(), new CC05(), new EC01(), new EC02()];
 const pullRequestRules: IPullRequestRequirement[] = [new PR01()];
 
 export { commitRules, pullRequestRules, RequirementError };

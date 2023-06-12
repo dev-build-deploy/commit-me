@@ -13,15 +13,44 @@ CommitMe provides multiple tools for validating commit messages against [Convent
   * Managing [labels](./docs/github-action.md#pull-request-labels) in your Pull Request
   * Two [validation strategies](./docs/github-action.md#validation-strategies) (Pull Request title only, Pull Request title _and_ associated commits) based on your repositories merge options
 
+
+![Example](./docs/images/cli_example.png)
+
 Both use the same [output format](#output-format) for expressing non-compliance issues.
 
 ## Specification
 
-In addition to the [Conventional Commits] specification, an [extended Pull Request specification](./docs/specifications.md#extended-pull-request-specification) is added to ensure best-in-class integration with the [GitHub Action](./docs/github-action.md).
+In addition to the [Conventional Commits] specification, extensions are added for [Conventional Commit messages](./docs/specifications.md#extended-conventional-commits-specification) and [Pull Requests](./docs/specifications.md#extended-pull-request-specification), providing additional rules such as:
+
+- Limit the `type` and `scope` to a preconfigured list of items.
+- Ensure that the Pull Request title is using a `type` correlating with its associated commits.
 
 _Please refer to the [dedicated documentation](./docs/specifications.md) for more details._
 
-## Tools
+## Output format
+
+CommitMe is using an output format derived from LLVM's [expressive diagnostics formatting](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#expressive-diagnostic-formatting);
+
+```
+2d9f21c2e2bb0f61ff88a99e5c0cb8d5771313c7:1:0: error: Commits MUST be prefixed with[...]
+^                                        ^ ^         ^
+|                                        | |         |
+|                                        | |         `-- Conventional Commits requirement
+|                                        | `-- Column bumber
+|                                        `-- Line number
+`-- Commit SHA                                   
+```
+
+> **NOTE**: The Conventional Commits requirement is truncated in the above example
+
+| Item | Description |
+| --- | --- |
+| `Commit SHA` | The commit hash of the commit containing non compliance issue |
+| `Line number` | Which line in the commit message contains the issue (**NOTE**: line 1 indicates the subject) |
+| `Column number` | Starting index of the non compliance issue |
+| `Conventional Commits requirement` | Full description taken from the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/#specification), with highlights indicating which parts are non-compliant |
+
+## Basic Usage
 
 ### Command Line Interface
 
@@ -90,29 +119,6 @@ In addition;
 * A [label](./docs/github-action.md#pull-request-labels) (`breaking`, `feature` or `fix`) is added to your Pull Request.
 
 _You can find more details in the [dedicated documentation](./docs/github-action.md)_
-
-## Output format
-
-CommitMe is using an output format derived from LLVM's [expressive diagnostics formatting](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#expressive-diagnostic-formatting);
-
-```
-2d9f21c2e2bb0f61ff88a99e5c0cb8d5771313c7:1:0: error: Commits MUST be prefixed with[...]
-^                                        ^ ^         ^
-|                                        | |         |
-|                                        | |         `-- Conventional Commits requirement
-|                                        | `-- Column bumber
-|                                        `-- Line number
-`-- Commit SHA                                   
-```
-
-> **NOTE**: The Conventional Commits requirement is truncated in the above example
-
-| Item | Description |
-| --- | --- |
-| `Commit SHA` | The commit hash of the commit containing non compliance issue |
-| `Line number` | Which line in the commit message contains the issue (**NOTE**: line 1 indicates the subject) |
-| `Column number` | Starting index of the non compliance issue |
-| `Conventional Commits requirement` | Full description taken from the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/#specification), with highlights indicating which parts are non-compliant |
 
 ## Contributing
 
