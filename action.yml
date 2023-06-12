@@ -24,6 +24,14 @@ inputs:
   include-commits:
     description: 'Include commits associated with the Pull Request; by default we use the repository configuration settings to determine this value.'
     required: false
+  
+  scopes:
+    description: 'Conventional Commits scopes allowed for this repository; be default we accept all scopes.'
+    required: false
+  
+  types:
+    description: 'Conventional Commits types allowed for this repository; by default we accept all types.'
+    required: false
 
 runs:
   using: 'node16'

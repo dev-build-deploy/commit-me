@@ -12,6 +12,7 @@ import { IValidationResult, validateCommits, validatePullRequest } from "../vali
 import { updatePullRequestLabels } from "../github";
 import { ICommit, IConventionalCommit } from "../conventional_commit";
 import assert from "assert";
+import { Configuration } from "../configuration";
 
 /**
  * Determines the label to be applied to the pull request.
@@ -50,66 +51,84 @@ const reportErrorMessages = (results: IValidationResult[]) => {
   return errorCount;
 };
 
+const setConfiguration = () => {
+  assert(github.context.payload.pull_request);
+
+  const pullrequestOnly = core.getInput("include-commits")
+    ? !core.getBooleanInput("include-commits")
+    : github.context.payload.pull_request.base.repo.base.allow_rebase_merge === false;
+
+  // Set the global configuration
+  const config = Configuration.getInstance();
+  config.includeCommits = !pullrequestOnly;
+  config.includePullRequest = true;
+  config.scopes = core.getMultilineInput("scopes") ?? [];
+  config.types = core.getMultilineInput("types") ?? [];
+};
+
 /**
  * Main entry point for the GitHub Action.
  */
 async function run(): Promise<void> {
   try {
     core.info("📄 CommitMe - Conventional Commit compliance validation");
+    setConfiguration();
 
     core.startGroup("📝 Checking repository configuration");
+    const datasource = new GitHubSource();
+    const config = Configuration.getInstance();
     const githubToken = core.getInput("token") ?? undefined;
+
+    assert(github.context.payload.pull_request);
 
     if (!["pull_request", "pull_request_target"].includes(github.context.eventName)) {
       core.setFailed("❌ This action only works on pull requests.");
       return;
     }
 
-    assert(github.context.payload.pull_request);
-
-    let pullrequestOnly = core.getInput("include-commits") ? !core.getBooleanInput("include-commits") : undefined;
-
-    if (githubToken === undefined && pullrequestOnly !== true) {
+    if (githubToken === undefined && config.includeCommits === true) {
       core.setFailed("❌ The `token` input is required for the current configuration of CommitMe.");
       return;
     }
 
-    if (pullrequestOnly === undefined) {
+    if (core.getInput("include-commits") === undefined) {
       repository.checkConfiguration(github.context.payload.pull_request.base.repo);
-      pullrequestOnly = github.context.payload.pull_request.base.repo.base.allow_rebase_merge === false;
     } else {
       core.info(
-        pullrequestOnly === false
+        config.includeCommits === true
           ? "ℹ️ Validating both Pull Request title and all associated commits."
           : "ℹ️ Only validating the Pull Request title."
       );
     }
 
     // Setting up the environment
-    const datasource = new GitHubSource();
-    const commits = pullrequestOnly ? [] : await datasource.getCommitMessages();
+    const commits = config.includeCommits ? await datasource.getCommitMessages() : [];
     core.endGroup();
 
     // Gathering commit message information
-    const pullrequest = {
-      hash: `#${github.context.payload.pull_request.number}`,
-      message: github.context.payload.pull_request.title,
-      body: github.context.payload.pull_request.body ?? "",
-    } as ICommit;
-
     const resultCommits = validateCommits(commits);
-    const resultPullrequest = validatePullRequest(
-      pullrequest,
-      resultCommits
-        .map(commit => commit.conventionalCommit as IConventionalCommit)
-        .filter(commit => commit !== undefined)
-    );
 
-    core.startGroup(`🔎 Scanning Pull Request`);
-    let errorCount = reportErrorMessages([resultPullrequest]);
-    core.endGroup();
+    let errorCount = 0;
+    const allResults: IValidationResult[] = [...resultCommits];
 
-    if (!pullrequestOnly) {
+    if (config.includePullRequest === true) {
+      core.startGroup(`🔎 Scanning Pull Request`);
+      const resultPullrequest = validatePullRequest(
+        {
+          hash: `#${github.context.payload.pull_request.number}`,
+          message: github.context.payload.pull_request.title,
+          body: github.context.payload.pull_request.body ?? "",
+        } as ICommit,
+        resultCommits
+          .map(commit => commit.conventionalCommit as IConventionalCommit)
+          .filter(commit => commit !== undefined)
+      );
+      allResults.push(resultPullrequest);
+      errorCount += reportErrorMessages([resultPullrequest]);
+      core.endGroup();
+    }
+
+    if (config.includeCommits === true) {
       core.startGroup("🔎 Scanning Commits associated with Pull Request");
       errorCount += reportErrorMessages(resultCommits);
       core.endGroup();
@@ -124,7 +143,7 @@ async function run(): Promise<void> {
     if (githubToken === undefined) {
       core.warning("⚠️ The token input is required to update the pull request label.");
     } else if (core.getBooleanInput("update-labels") === true) {
-      const label = await determineLabel([resultPullrequest, ...resultCommits]);
+      const label = await determineLabel(allResults);
       if (label !== undefined) await updatePullRequestLabels(label);
     }
 

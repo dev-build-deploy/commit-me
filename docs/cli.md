@@ -54,6 +54,8 @@ Checks whether your commit messagesare compliant with the Conventional Commit sp
 
 Options:
   -b, --base-branch <branch>  The base branch to compare the current branch with.
+  -s, --scopes [scopes...]    Conventional Commits scopes to validate against.
+  -t, --types [types...]      Conventional Commits types to validate against.
   -h, --help                  display help for command
 ```
 

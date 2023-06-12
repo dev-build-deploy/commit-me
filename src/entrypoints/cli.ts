@@ -9,6 +9,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import { Command } from "commander";
 import { GitSource } from "../datasources";
 import { validateCommits } from "../validator";
+import { Configuration } from "../configuration";
 
 const program = new Command();
 
@@ -24,9 +25,18 @@ program
   .command("check")
   .description("Checks whether your commit messagesare compliant with the Conventional Commit specification.")
   .option("-b, --base-branch <branch>", "The base branch to compare the current branch with.")
+  .option("-s, --scopes [scopes...]", "Conventional Commits scopes to validate against.")
+  .option("-t, --types [types...]", "Conventional Commits types to validate against.")
   .action(async options => {
     console.log("📄 CommitMe - Conventional Commit compliance validation");
     console.log("-------------------------------------------------------");
+
+    // Set the global configuration
+    const config = Configuration.getInstance();
+    config.includeCommits = true;
+    config.includePullRequest = false;
+    config.scopes = options.scopes ?? [];
+    config.types = options.types ?? [];
 
     const datasource = new GitSource(options.baseBranch ?? "main");
     const commits = await datasource.getCommitMessages();
