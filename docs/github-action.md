@@ -12,12 +12,13 @@ You can scan your [pull requests](#pull-request-scanning) for determining compli
 
 ## Validation strategies
 
-Currently there are two distinct [Conventional Commits] validation strategies implemented based on the allowed merge strategies in your repository:
+Currently there are two distinct [Conventional Commits] validation strategies implemented;
+- Validate the Pull Request title and all associated commits _(default behavior)_.
+- **ONLY** validate the Pull Request title.
 
-- `Allow rebase merge`: Validate the Pull Request title and all associated commits _(default behavior)_.
-- `Do not allow rebase merge`: **ONLY** validate the Pull Request title.
-
-The `contents: write` permission needs to be set in order for this detection to work.
+Selection of the strategy is based on either:
+- The allowed merge strategies in your repository (the `contents: write` permission needs to be set in order for this detection to work.)
+- Manually configuring the `include-commits` input parameter
 
 ## Workflows
 
@@ -69,6 +70,7 @@ In addition, we recommend the following activity types:
 | --- | --- | --- |
 | `token` | *YES* | GitHub token needed to access your commits in your pull request |
 | `update-labels` | *NO* | Allow CommitMe to manage [labels](#pull-request-labels) based on the [Conventional Commits] metadata, required `write` permissions for `pull-request`, defaults to `true` |
+| `include-commits` | *NO* | Include commits associated with the Pull Request; by default we use the repository configuration settings to determine this value. |
 
 ### Permissions
 
@@ -76,7 +78,7 @@ In addition, we recommend the following activity types:
 | --- | --- | --- |
 | `pull-request` | `read` | Access to read pull request data, including associated commits |
 | `pull-request` | `write` | Only required when the `update-labels`-input is set to `true`, allows for updating labels associated with the [Conventional Commits] in your Pull Request |
-| `contents` | `write` | This permission is required in order to determine whether this repository allows rebase merges (see: [validation strategies](#validation-strategies)) |
+| `contents` | `write` | This permission is required in order to determine whether this repository allows rebase merges (see: [validation strategies](#validation-strategies))<br><br>If you do not want to provide this permission, you can also use the `include-commits` [input parameter](#inputs) to bypass the automatic checl. |
 
 ## Pull Request Labels
 

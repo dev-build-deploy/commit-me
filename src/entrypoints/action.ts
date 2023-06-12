@@ -56,23 +56,34 @@ async function run(): Promise<void> {
   try {
     core.info("📄 CommitMe - Conventional Commit compliance validation");
 
+    core.startGroup("📝 Checking repository configuration");
+
     if (!["pull_request", "pull_request_target"].includes(github.context.eventName)) {
       core.setFailed("❌ This action only works on pull requests.");
       return;
     }
 
-    // Setting up the environment
-    core.startGroup("📝 Checking repository configuration");
-    await repository.checkConfiguration();
-    const hasRebaseMerge = await repository.hasRebaseMerge();
+    let pullrequestOnly = core.getInput("include-commits") ? core.getBooleanInput("include-commits") : undefined;
 
-    const datasource = new GitHubSource(!hasRebaseMerge);
+    if (pullrequestOnly === undefined) {
+      await repository.checkConfiguration();
+      pullrequestOnly = await repository.hasRebaseMerge();
+    } else {
+      core.info(
+        pullrequestOnly === false
+          ? "ℹ️ Validating both Pull Request title and all associated commits."
+          : "ℹ️ Only validating the Pull Request title."
+      );
+    }
+
+    // Setting up the environment
+    const datasource = new GitHubSource(!pullrequestOnly);
     const commits = await datasource.getCommitMessages();
     core.endGroup();
 
     // Gathering commit message information
     const pullrequest = await datasource.getPullRequest();
-    const resultCommits = hasRebaseMerge ? validateCommits(commits) : [];
+    const resultCommits = pullrequestOnly ? validateCommits(commits) : [];
     const resultPullrequest = validatePullRequest(
       pullrequest,
       resultCommits
@@ -84,7 +95,7 @@ async function run(): Promise<void> {
     let errorCount = reportErrorMessages([resultPullrequest]);
     core.endGroup();
 
-    if (hasRebaseMerge) {
+    if (pullrequestOnly) {
       core.startGroup("🔎 Scanning Commits associated with Pull Request");
       errorCount += reportErrorMessages(resultCommits);
       core.endGroup();
