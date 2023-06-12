@@ -66,9 +66,13 @@ async function run(): Promise<void> {
     }
 
     assert(github.context.payload.pull_request);
-    assert(github.context.payload.pull_request.base.repo);
 
-    let pullrequestOnly = core.getInput("include-commits") ? core.getBooleanInput("include-commits") : undefined;
+    let pullrequestOnly = core.getInput("include-commits") ? !core.getBooleanInput("include-commits") : undefined;
+
+    if (githubToken === undefined && pullrequestOnly !== true) {
+      core.setFailed("❌ The `token` input is required for the current configuration of CommitMe.");
+      return;
+    }
 
     if (pullrequestOnly === undefined) {
       repository.checkConfiguration(github.context.payload.pull_request.base.repo);
@@ -81,14 +85,9 @@ async function run(): Promise<void> {
       );
     }
 
-    if (githubToken === undefined && pullrequestOnly === false) {
-      core.setFailed("❌ The token input is required when validating commits.");
-      return;
-    }
-
     // Setting up the environment
     const datasource = new GitHubSource();
-    const commits = await datasource.getCommitMessages();
+    const commits = pullrequestOnly ? [] : await datasource.getCommitMessages();
     core.endGroup();
 
     // Gathering commit message information
@@ -98,7 +97,7 @@ async function run(): Promise<void> {
       body: github.context.payload.pull_request.body ?? "",
     } as ICommit;
 
-    const resultCommits = pullrequestOnly ? validateCommits(commits) : [];
+    const resultCommits = validateCommits(commits);
     const resultPullrequest = validatePullRequest(
       pullrequest,
       resultCommits
@@ -110,7 +109,7 @@ async function run(): Promise<void> {
     let errorCount = reportErrorMessages([resultPullrequest]);
     core.endGroup();
 
-    if (pullrequestOnly) {
+    if (!pullrequestOnly) {
       core.startGroup("🔎 Scanning Commits associated with Pull Request");
       errorCount += reportErrorMessages(resultCommits);
       core.endGroup();
