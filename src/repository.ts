@@ -4,7 +4,6 @@ SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
 SPDX-License-Identifier: GPL-3.0-or-later
 */
 
-import { getRepository } from "./github";
 import * as core from "@actions/core";
 
 /**
@@ -13,9 +12,7 @@ import * as core from "@actions/core";
  * - Whether squash commits are enabled and whether the default subject is based on the Pull Request title
  * - Whether rebase commits are enabled
  */
-const checkConfiguration = async () => {
-  const repository = await getRepository();
-
+const checkConfiguration = (repository: any) => {
   if (
     repository.allow_merge_commit === undefined ||
     repository.allow_squash_merge === undefined ||
@@ -54,12 +51,4 @@ const checkConfiguration = async () => {
   );
 };
 
-/**
- * Checks whether rebase merges are enabled.
- * @returns Whether rebase merges are enabled.
- */
-const hasRebaseMerge = async (): Promise<boolean> => {
-  return (await getRepository()).allow_rebase_merge === true;
-};
-
-export { checkConfiguration, hasRebaseMerge };
+export { checkConfiguration };

@@ -48,28 +48,6 @@ class GitSource implements IDataSource {
  * GitHub data source for determining which commits need to be validated.
  */
 class GitHubSource implements IDataSource {
-  prTitleOnly: boolean;
-
-  constructor(prTitleOnly: boolean) {
-    this.prTitleOnly = prTitleOnly;
-  }
-
-  public async getPullRequest(): Promise<ICommit> {
-    const octokit = github.getOctokit(core.getInput("token"));
-    const pullRequestNumber = github.context.payload.pull_request?.number;
-    assert(pullRequestNumber);
-
-    const { data: pullRequest } = await octokit.rest.pulls.get({
-      ...github.context.repo,
-      pull_number: pullRequestNumber,
-    });
-    return {
-      hash: `#${pullRequest.number}`,
-      message: pullRequest.title,
-      body: pullRequest.body ?? "", // TODO: Validate pull request body
-    };
-  }
-
   public async getCommitMessages(): Promise<ICommit[]> {
     const octokit = github.getOctokit(core.getInput("token"));
     const pullRequestNumber = github.context.payload.pull_request?.number;
@@ -80,17 +58,13 @@ class GitHubSource implements IDataSource {
       pull_number: pullRequestNumber,
     });
 
-    const result = this.prTitleOnly
-      ? []
-      : commits.data.map((commit: any) => {
-          return {
-            hash: commit.sha,
-            message: commit.commit.message.split("\n")[0],
-            body: "", // TODO: Validate commit body
-          };
-        });
-
-    return result;
+    return commits.data.map((commit: any) => {
+      return {
+        hash: commit.sha,
+        message: commit.commit.message.split("\n")[0],
+        body: "", // TODO: Validate commit body
+      };
+    });
   }
 }
 

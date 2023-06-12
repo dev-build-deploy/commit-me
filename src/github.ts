@@ -33,16 +33,4 @@ const updatePullRequestLabels = async (label: "fix" | "feature" | "breaking") =>
   }
 };
 
-/**
- * Retrieves repository metadata.
- * @returns Repository metadata
- */
-const getRepository = async () => {
-  const octokit = github.getOctokit(core.getInput("token"));
-  const { data: repository } = await octokit.rest.repos.get({
-    ...github.context.repo,
-  });
-  return repository;
-};
-
-export { getRepository, updatePullRequestLabels };
+export { updatePullRequestLabels };

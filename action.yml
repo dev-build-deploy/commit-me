@@ -14,7 +14,7 @@ branding:
 inputs:
   token: 
     description: 'GitHub token used to access GitHub (eg. github.token)'
-    required: true
+    required: false
   
   update-labels:
     description: 'Update labels on Pull Request (`breaking`, `feature` or `fix`)'

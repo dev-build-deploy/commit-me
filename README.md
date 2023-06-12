@@ -62,20 +62,23 @@ on:
       - edited
       - synchronize
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}  # Ensure that only one instance of this workflow is running per Pull Request
+  cancel-in-progress: true  # Cancel any previous runs of this workflow
+
 permissions:
-  contents: write  # OPTIONAL; needed to determine merge strategies
-  pull-request: write  # OPTIONAL; needed to manage labels
+  contents: read  # NOTE; you will need to change this permission to `write` in case you do not provide the `include-commits` input parameter.
+  pull-requests: write  # OPTIONAL; only required when you want CommitMe to update labels in your Pull Request, set `update-labels` to `false` if you do not require this feature.
 
 jobs:
   commit-me:
-    name: Conventional Commit compliance
+    name: Conventional Commits Compliance
     runs-on: ubuntu-latest
     steps:
       - uses: dev-build-deploy/commit-me@v0
         with:
-          token: ${{ github.token }}
-          update-labels: true  # OPTIONAL; manages labels on your Pull Request, defaults to `true`
-          include-commits: true  # OPTIONAL; includes commits associated with your Pull Request
+          token: ${{ github.token }}  # Required to retrieve the commits associated with your Pull Request
+          include-commits: true  # OPTIONAL; forces the inclusion of commits associated with your Pull Request
 ```
 
 This will result in output similar to:

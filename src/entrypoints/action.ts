@@ -10,7 +10,8 @@ import * as repository from "../repository";
 import { GitHubSource } from "../datasources";
 import { IValidationResult, validateCommits, validatePullRequest } from "../validator";
 import { updatePullRequestLabels } from "../github";
-import { IConventionalCommit } from "../conventional_commit";
+import { ICommit, IConventionalCommit } from "../conventional_commit";
+import assert from "assert";
 
 /**
  * Determines the label to be applied to the pull request.
@@ -57,17 +58,21 @@ async function run(): Promise<void> {
     core.info("📄 CommitMe - Conventional Commit compliance validation");
 
     core.startGroup("📝 Checking repository configuration");
+    const githubToken = core.getInput("token") ?? undefined;
 
     if (!["pull_request", "pull_request_target"].includes(github.context.eventName)) {
       core.setFailed("❌ This action only works on pull requests.");
       return;
     }
 
+    assert(github.context.payload.pull_request);
+    assert(github.context.payload.pull_request.base.repo);
+
     let pullrequestOnly = core.getInput("include-commits") ? core.getBooleanInput("include-commits") : undefined;
 
     if (pullrequestOnly === undefined) {
-      await repository.checkConfiguration();
-      pullrequestOnly = await repository.hasRebaseMerge();
+      repository.checkConfiguration(github.context.payload.pull_request.base.repo);
+      pullrequestOnly = github.context.payload.pull_request.base.repo.base.allow_rebase_merge === false;
     } else {
       core.info(
         pullrequestOnly === false
@@ -76,13 +81,23 @@ async function run(): Promise<void> {
       );
     }
 
+    if (githubToken === undefined && pullrequestOnly === false) {
+      core.setFailed("❌ The token input is required when validating commits.");
+      return;
+    }
+
     // Setting up the environment
-    const datasource = new GitHubSource(!pullrequestOnly);
+    const datasource = new GitHubSource();
     const commits = await datasource.getCommitMessages();
     core.endGroup();
 
     // Gathering commit message information
-    const pullrequest = await datasource.getPullRequest();
+    const pullrequest = {
+      hash: `#${github.context.payload.pull_request.number}`,
+      message: github.context.payload.pull_request.title,
+      body: github.context.payload.pull_request.body ?? "",
+    } as ICommit;
+
     const resultCommits = pullrequestOnly ? validateCommits(commits) : [];
     const resultPullrequest = validatePullRequest(
       pullrequest,
@@ -107,7 +122,9 @@ async function run(): Promise<void> {
     }
 
     // Updating the pull request label
-    if (core.getBooleanInput("update-labels") === true) {
+    if (githubToken === undefined) {
+      core.warning("⚠️ The token input is required to update the pull request label.");
+    } else if (core.getBooleanInput("update-labels") === true) {
       const label = await determineLabel([resultPullrequest, ...resultCommits]);
       if (label !== undefined) await updatePullRequestLabels(label);
     }

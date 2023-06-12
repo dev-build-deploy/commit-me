@@ -12,19 +12,25 @@ on:
       - edited
       - synchronize
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}  # Ensure that only one instance of this workflow is running per Pull Request
+  cancel-in-progress: true  # Cancel any previous runs of this workflow
+
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read  # Required to retrieve the commits associated with your Pull Request
+  pull-requests: write  # Required to add a label to your Pull Request
 
 jobs:
-  commit-message:
+  commit-me:
     name: Conventional Commits Compliance
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
-
       - name: Run CommitMe
         uses: ./
         with:
-          token: ${{ github.token }}
+          token: ${{ github.token }}  # Required to retrieve the commits associated with
+                                      # your Pull Request
+          include-commits: true  # Forces the inclusion of commits associated with your
+                                 # Pull Request without requiring the `contents:write`
+                                 # permission
