@@ -105,8 +105,8 @@ In addition, we recommend the following activity types:
 | Name | Required | Description |
 | --- | --- | --- |
 | `token` | *NO* | GitHub token needed to access your commits in your pull request. This is **only** required in case you want to:<br><ul><li>Validate commits associated with your Pull Request</li><li>Update labels in your Pull Request</li></ul> |
-| `update-labels` | *NO* | Allow CommitMe to manage [labels](#pull-request-labels) based on the [Conventional Commits] metadata (requires `write` permissions for `pull-requests`), defaults to `true` |
-| `include-commits` | *NO* | Include commits associated with the Pull Request; by default we use the repository configuration settings to determine this value (requires `write` permissions for `contents`). |
+| `update-labels` | *NO* | Allow CommitMe to manage [labels](#pull-request-labels) based on the [Conventional Commits] metadata (requires `pull-requests:write` permission), defaults to `true` |
+| `include-commits` | *NO* | Include commits associated with the Pull Request; by default we use the repository configuration settings to determine this value (requires `contents:write` permission if **NOT** set). |
 
 ### Permissions
 
