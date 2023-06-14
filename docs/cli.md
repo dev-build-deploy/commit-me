@@ -61,10 +61,14 @@ Options:
 
 By default, it will use `main` as the base branch.
 
+
+Running this command...
 ```sh
 $ commit-me check
 ```
 
-![Example](./images/cli_example.png)
+...will result in output similar to:
+
+<img src="./images/cli_example.svg">
 
 Additionally, you can use the `--base-branch` option to change the reference branch to compare with.

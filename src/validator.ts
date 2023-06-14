@@ -4,10 +4,9 @@ SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
 SPDX-License-Identifier: GPL-3.0-or-later
 */
 
-import * as datasources from "./datasources";
 import * as conventionalCommit from "./conventional_commit";
 import * as requirements from "./requirements";
-import { ExpressiveMessage } from "./logging";
+import { ExpressiveMessage } from "@dev-build-deploy/diagnose-it";
 
 /**
  * Validation result interface
@@ -16,8 +15,8 @@ import { ExpressiveMessage } from "./logging";
  * @member conventionalCommit The associated conventional commit
  * @member errors List of error messages
  */
-interface IValidationResult {
-  commit: datasources.ICommit;
+export interface IValidationResult {
+  commit: conventionalCommit.ICommit;
   conventionalCommit?: conventionalCommit.IConventionalCommit;
   errors: string[];
 }
@@ -27,7 +26,7 @@ interface IValidationResult {
  * @param commit Commit message to validate against the Conventional Commit specification
  * @returns Validation result
  */
-const validateCommit = (commit: datasources.ICommit) => {
+function validateCommit(commit: conventionalCommit.ICommit) {
   const result: IValidationResult = { commit: commit, errors: [] };
 
   try {
@@ -41,7 +40,7 @@ const validateCommit = (commit: datasources.ICommit) => {
   }
 
   return result;
-};
+}
 
 /**
  * Validates the pull request against CommitMe requirements.
@@ -49,10 +48,10 @@ const validateCommit = (commit: datasources.ICommit) => {
  * @param commits The commits associated with the pull request
  * @returns Validation result
  */
-const validatePullRequest = (
+export function validatePullRequest(
   pullrequest: conventionalCommit.ICommit,
   commits: conventionalCommit.IConventionalCommit[]
-) => {
+) {
   const result = validateCommit(pullrequest);
   if (result.conventionalCommit === undefined) return result;
 
@@ -68,7 +67,7 @@ const validatePullRequest = (
   errors.forEach(e => e.errors.filter(e => e instanceof ExpressiveMessage).forEach(e => result.errors.push(e.message)));
 
   return result;
-};
+}
 
 /**
  * Validates the given set of commit messages against the conventional commit specification.
@@ -76,8 +75,6 @@ const validatePullRequest = (
  * @returns A list of validation results
  * @see https://www.conventionalcommits.org/en/v1.0.0/
  */
-const validateCommits = (commits: datasources.ICommit[]): IValidationResult[] => {
+export function validateCommits(commits: conventionalCommit.ICommit[]): IValidationResult[] {
   return commits.filter(commit => !commit.message.startsWith("fixup!")).map(commit => validateCommit(commit));
-};
-
-export { validateCommits, validatePullRequest, IValidationResult };
+}

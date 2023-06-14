@@ -25,7 +25,7 @@ class Configuration {
     this.includePullRequest = false;
   }
 
-  public static getInstance() {
+  static getInstance() {
     if (!Configuration._instance) {
       Configuration._instance = new Configuration();
     }

@@ -7,7 +7,7 @@ SPDX-License-Identifier: CC-BY-3.0
 
 import { IConventionalCommit, IConventionalCommitElement, IRawConventionalCommit } from "./conventional_commit";
 import { Configuration } from "./configuration";
-import { ExpressiveMessage } from "./logging";
+import { ExpressiveMessage } from "@dev-build-deploy/diagnose-it";
 
 /**
  * Requirement interface
@@ -51,7 +51,7 @@ interface IPullRequestRequirement extends IRequirement {
 /**
  * Error thrown when a commit message does not meet the Conventional Commit specification.
  */
-class RequirementError extends Error {
+export class RequirementError extends Error {
   commit: IRawConventionalCommit;
   description: string;
   errors: ExpressiveMessage[] = [];
@@ -76,13 +76,17 @@ class RequirementError extends Error {
     const data = this.commit[type.toString() as keyof IRawConventionalCommit] as IConventionalCommitElement;
 
     this.errors.push(
-      new ExpressiveMessage(
-        this.highlightString(this.description, highlight),
-        this.commit.commit.hash,
-        this.commit.commit.message,
-        data.index,
-        data.value?.length ?? 0
-      )
+      new ExpressiveMessage()
+        .id(this.commit.commit.hash)
+        .error(this.highlightString(this.description, highlight))
+        .columnNumber(data.index)
+        .context(
+          this.commit.commit.body.split("\n").length > 1 && this.commit.commit.body[0] !== ""
+            ? [this.commit.commit.message, "", ...this.commit.commit.body.split("\n")]
+            : [this.commit.commit.message],
+          0,
+          data.value?.length || 0
+        )
     );
     this.message = this.errors.map(e => e.toString()).join("\n");
   }
@@ -93,7 +97,7 @@ class RequirementError extends Error {
    * @param substring substring(s) to highlight (in cyan)
    * @returns string containing highlighted sections in cyan
    */
-  private highlightString = (str: string, substring: string | string[]) => {
+  private highlightString(str: string, substring: string | string[]) {
     const HIGHLIGHT = "\x1b[1;36m";
     const RESET = "\x1b[0m\x1b[1m";
 
@@ -104,7 +108,7 @@ class RequirementError extends Error {
     let result = str;
     substring.forEach(sub => (result = result.replace(sub, `${HIGHLIGHT}${sub}${RESET}`)));
     return result;
-  };
+  }
 }
 
 /**
@@ -225,7 +229,7 @@ class EC02 implements ICommitRequirement {
   validate(commit: IRawConventionalCommit) {
     const config = Configuration.getInstance();
 
-    this.description = `TThe type MUST be one of the configured values (${config?.types?.join(", ")}).`;
+    this.description = `The type MUST be one of the configured values (${config?.types?.join(", ")}).`;
     if (config.types === undefined || config.types?.length === 0) return;
     if (commit.type.value !== undefined && config.types.includes(commit.type.value)) return;
 
@@ -271,7 +275,5 @@ class PR01 implements IPullRequestRequirement {
   }
 }
 
-const commitRules: ICommitRequirement[] = [new CC01(), new CC04(), new CC05(), new EC01(), new EC02()];
-const pullRequestRules: IPullRequestRequirement[] = [new PR01()];
-
-export { commitRules, pullRequestRules, RequirementError };
+export const commitRules: ICommitRequirement[] = [new CC01(), new CC04(), new CC05(), new EC01(), new EC02()];
+export const pullRequestRules: IPullRequestRequirement[] = [new PR01()];

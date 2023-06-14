@@ -12,14 +12,14 @@ const removeColors = (message: string) => {
   return message.replace(/\x1b\[[0-9;]*m/g, "");
 };
 
-const validateRequirement = (message: string, expected: string) => {
+const validateRequirement = (message: string, expected: string, body = "") => {
   const msg = {
     hash: "1234567890",
     message: message,
-    body: "",
+    body: body,
   };
 
-  let debugOutput: string[] = [];
+  const debugOutput: string[] = [];
   try {
     commit.parse(msg);
     throw new Error(`Expected error message '${expected}', but no errors thrown.`);
@@ -138,5 +138,26 @@ describe("Extended Conventional Commits specification", () => {
     for (const message of ["chore: unknown type", "docs(scope)!: unknown type"]) {
       validateRequirement(message, "The type MUST be one of the configured values (feat, fix).");
     }
+  });
+});
+
+describe("Validate body of Commit Messages", () => {
+  beforeAll(() => {
+    const config = Configuration.getInstance();
+    config.scopes = undefined;
+    config.types = undefined;
+  });
+
+  test("Commit Message with body", () => {
+    const message = `feat : this is a commit message with body`;
+    const body = `This is the body of the commit message.
+This is the second line of the body.
+
+Acked-by: Kevin de Jong`;
+    validateRequirement(
+      message,
+      "Commits MUST be prefixed with a type, which consists of a noun, feat, fix, etc., followed by the OPTIONAL scope, OPTIONAL !, and REQUIRED terminal colon and space.",
+      body
+    );
   });
 });

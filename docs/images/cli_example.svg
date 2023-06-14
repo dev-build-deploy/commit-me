@@ -1,0 +1,50 @@
+<svg fill="none" viewBox="0 0 900 600" width="900" height="600" xmlns="http://www.w3.org/2000/svg">
+    <foreignObject width="100%" height="100%">
+    <style type="text/css">
+      .ansi2html-content { white-space: pre-wrap; word-wrap: break-word; }
+      .body_foreground { color: #AAAAAA; }
+      .body_background { background-color: #000000; }
+      .inv_foreground { color: #000000; }
+      .inv_background { background-color: #AAAAAA; }
+      .ansi1 { font-weight: bold; }
+      .ansi31 { color: #aa0000; }
+      .ansi32 { color: #00aa00; }
+      .ansi36 { color: #00aaaa; }
+      .ansi38-245 { color: #8a8a8a; }
+    </style>
+      <div xmlns="http://www.w3.org/1999/xhtml" style="color: #ffffff; background-color: #171B21; padding: 10px">
+<pre class="ansi2html-content">
+📄 CommitMe - Conventional Commit compliance validation
+-------------------------------------------------------
+✅ 274f733152a661b583f64a92474a5baa319427a9: feat: add the commit message body to the output messages
+❌ d07e9737b348d56ba8db6095de62b91935dff361: feat(example?) :This is an example commit message
+<span class="ansi1">d07e9737b348d56ba8db6095de62b91935dff361:0:14: </span><span class="ansi1 ansi31">error:</span><span class="ansi1"> Commits MUST be prefixed with a type, which consists of a noun, feat, fix, etc., </span><span class="ansi1 ansi36">followed by the</span><span class="ansi1"> OPTIONAL scope, OPTIONAL !, and </span><span class="ansi1 ansi36">REQUIRED terminal colon</span><span class="ansi1"> and space.</span>
+
+  0 | feat(example?) :This is an example commit message
+    |               <span class="ansi1 ansi32">^-</span>
+<span class="ansi38-245">  1 | 
+</span><span class="ansi38-245">  2 | This commit message demonstrates few Conventional Commits compliance
+</span><span class="ansi38-245">  3 | errors.
+</span>
+<span class="ansi1">d07e9737b348d56ba8db6095de62b91935dff361:0:16: </span><span class="ansi1 ansi31">error:</span><span class="ansi1"> Commits MUST be prefixed with a type, which consists of a noun, feat, fix, etc., </span><span class="ansi1 ansi36">followed by the</span><span class="ansi1"> OPTIONAL scope, OPTIONAL !, and </span><span class="ansi1 ansi36">REQUIRED</span><span class="ansi1"> terminal colon and </span><span class="ansi1 ansi36">space</span><span class="ansi1">.</span>
+
+  0 | feat(example?) :This is an example commit message
+    |                 <span class="ansi1 ansi32">^</span>
+<span class="ansi38-245">  1 | 
+</span><span class="ansi38-245">  2 | This commit message demonstrates few Conventional Commits compliance
+</span><span class="ansi38-245">  3 | errors.
+</span>
+<span class="ansi1">d07e9737b348d56ba8db6095de62b91935dff361:0:4: </span><span class="ansi1 ansi31">error:</span><span class="ansi1"> A scope MAY be provided after a type. </span><span class="ansi1 ansi36">A scope MUST consist of a noun</span><span class="ansi1"> describing a section of the codebase surrounded by parenthesis, e.g., fix(parser):</span>
+
+  0 | feat(example?) :This is an example commit message
+    |     <span class="ansi1 ansi32">^---------</span>
+<span class="ansi38-245">  1 | 
+</span><span class="ansi38-245">  2 | This commit message demonstrates few Conventional Commits compliance
+</span><span class="ansi38-245">  3 | errors.
+</span>
+✅ 1dcfe1609337c9bfacaeab11158caf4dc09355b7: feat: improve output messages
+-------------------------------------------------------
+❌ Found 3 Conventional Commit compliance issues.</pre>
+      </div>
+    </foreignObject>
+</svg>
