@@ -12,7 +12,7 @@ import * as core from "@actions/core";
  * - Whether squash commits are enabled and whether the default subject is based on the Pull Request title
  * - Whether rebase commits are enabled
  */
-const checkConfiguration = (repository: any) => {
+export function checkConfiguration(repository: any) {
   if (
     repository.allow_merge_commit === undefined ||
     repository.allow_squash_merge === undefined ||
@@ -25,7 +25,6 @@ const checkConfiguration = (repository: any) => {
 
   if (repository.allow_merge_commit) {
     core.info(
-      // @ts-ignore - 'merge_commit_title' is a valid value, but not in the type definition
       repository.merge_commit_title === "PR_TITLE"
         ? "✅ Default merge commit subject will use the Pull Request title."
         : "⚠️ Default merge commit subject is not based on your Pull Request title."
@@ -49,6 +48,4 @@ const checkConfiguration = (repository: any) => {
       ? "ℹ️ Rebase merges are enabled, validating both Pull Request title and all associated commits."
       : "ℹ️ Rebase merges are disabled, only validating the Pull Request title."
   );
-};
-
-export { checkConfiguration };
+}

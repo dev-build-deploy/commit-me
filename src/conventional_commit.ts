@@ -14,7 +14,7 @@ import * as requirements from "./requirements";
  * @member message The commit message
  * @member body The commit body
  */
-interface ICommit {
+export interface ICommit {
   hash: string;
   message: string;
   body: string;
@@ -26,7 +26,7 @@ interface ICommit {
  * @member index Index of the element in the commit message
  * @member value Value of the element in the commit message
  */
-type IConventionalCommitElement = {
+export type IConventionalCommitElement = {
   index: number;
   value?: string;
 };
@@ -42,7 +42,7 @@ type IConventionalCommitElement = {
  * @member subject Conventional Commit subject
  * @member body Commit message body
  */
-interface IRawConventionalCommit {
+export interface IRawConventionalCommit {
   commit: ICommit;
   type: IConventionalCommitElement;
   scope: IConventionalCommitElement;
@@ -64,7 +64,7 @@ interface IRawConventionalCommit {
  * @member body Commit message body
  * @see https://www.conventionalcommits.org/en/v1.0.0/
  */
-interface IConventionalCommit {
+export interface IConventionalCommit {
   raw: IRawConventionalCommit;
   type: string;
   scope?: string;
@@ -79,7 +79,7 @@ interface IConventionalCommit {
  * @throws RequirementError[] if the commit message is not a valid Conventional Commit
  * @see https://www.conventionalcommits.org/en/v1.0.0/
  */
-const validate = (commit: IRawConventionalCommit): IConventionalCommit => {
+function validate(commit: IRawConventionalCommit): IConventionalCommit {
   const errors: Error[] = [];
   for (const rule of requirements.commitRules) {
     try {
@@ -101,7 +101,7 @@ const validate = (commit: IRawConventionalCommit): IConventionalCommit => {
     breaking: commit.breaking.value === "!",
     description: commit.description.value,
   };
-};
+}
 
 /**
  * Parses a Commit message into a Conventional Commit.
@@ -109,7 +109,7 @@ const validate = (commit: IRawConventionalCommit): IConventionalCommit => {
  * @throws RequirementError[] if the commit message is not a valid Conventional Commit
  * @returns Conventional Commit
  */
-const parse = (commit: ICommit): IConventionalCommit => {
+export function parse(commit: ICommit): IConventionalCommit {
   const ConventionalCommitRegex = new RegExp(
     /^(?<type>[^(!:]*)(?<scope>\(.*\))?(?<breaking>\s*!)?(?<separator>\s*:)?(?<spacing>\s*)(?<subject>.*)?$/
   );
@@ -126,18 +126,16 @@ const parse = (commit: ICommit): IConventionalCommit => {
     body: { index: 0, value: commit.body },
   };
 
-  const intializeIndices = (commit: IRawConventionalCommit) => {
+  function intializeIndices(commit: IRawConventionalCommit) {
     commit.scope.index = commit.type.index + (commit.type.value?.length ?? 0);
     commit.breaking.index = commit.scope.index + (commit.scope.value?.length ?? 0);
     commit.seperator.index = commit.breaking.index + (commit.breaking.value?.length ?? 0);
     commit.spacing.index = commit.seperator.index + (commit.seperator.value?.length ?? 0);
     commit.description.index = commit.spacing.index + (commit.spacing.value?.length ?? 0);
     return commit;
-  };
+  }
 
   conventionalCommit = intializeIndices(conventionalCommit);
 
   return validate(conventionalCommit);
-};
-
-export { parse, ICommit, IConventionalCommitElement, IRawConventionalCommit, IConventionalCommit };
+}

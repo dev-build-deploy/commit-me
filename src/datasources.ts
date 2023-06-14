@@ -14,21 +14,21 @@ import { ICommit } from "./conventional_commit";
  * @interface IDataSource
  * @member getCommitMessages Returns a list of commits to be validated
  */
-interface IDataSource {
+export interface IDataSource {
   getCommitMessages(): Promise<ICommit[]>;
 }
 
 /**
  * Git data source for determining which commits need to be validated.
  */
-class GitSource implements IDataSource {
+export class GitSource implements IDataSource {
   sourceBranch: string;
 
-  constructor(baseBranch: string = "main") {
+  constructor(baseBranch = "main") {
     this.sourceBranch = baseBranch;
   }
 
-  public async getCommitMessages(): Promise<ICommit[]> {
+  async getCommitMessages(): Promise<ICommit[]> {
     const data = await simpleGit().log({
       from: this.sourceBranch,
       to: "HEAD",
@@ -47,8 +47,8 @@ class GitSource implements IDataSource {
 /**
  * GitHub data source for determining which commits need to be validated.
  */
-class GitHubSource implements IDataSource {
-  public async getCommitMessages(): Promise<ICommit[]> {
+export class GitHubSource implements IDataSource {
+  async getCommitMessages(): Promise<ICommit[]> {
     const octokit = github.getOctokit(core.getInput("token"));
     const pullRequestNumber = github.context.payload.pull_request?.number;
     assert(pullRequestNumber);
@@ -62,10 +62,8 @@ class GitHubSource implements IDataSource {
       return {
         hash: commit.sha,
         message: commit.commit.message.split("\n")[0],
-        body: "", // TODO: Validate commit body
+        body: commit.commit.message.split("\n").slice(2).join("\n"),
       };
     });
   }
 }
-
-export { ICommit, IDataSource, GitSource, GitHubSource };

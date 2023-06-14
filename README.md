@@ -13,8 +13,7 @@ CommitMe provides multiple tools for validating commit messages against [Convent
   * Managing [labels](./docs/github-action.md#pull-request-labels) in your Pull Request
   * Two [validation strategies](./docs/github-action.md#validation-strategies) (Pull Request title only, Pull Request title _and_ associated commits) based on your repositories merge options
 
-
-![Example](./docs/images/cli_example.png)
+<img src="./docs/images/cli_example.svg">
 
 Both use the same [output format](#output-format) for expressing non-compliance issues.
 
@@ -41,7 +40,7 @@ CommitMe is using an output format derived from LLVM's [expressive diagnostics f
 `-- Commit SHA                                   
 ```
 
-> **NOTE**: The Conventional Commits requirement is truncated in the above example
+> **NOTE**: Please refer to [dev-build-deploy/diagnose-it](https://github.com/dev-build-deploy/diagnose-it) for more details.
 
 | Item | Description |
 | --- | --- |
@@ -67,7 +66,7 @@ $ commit-me check
 
 ...will result in output similar to:
 
-![Example](./docs/images/cli_example.png)
+<img src="./docs/images/cli_example.svg">
 
 > **NOTE**: highlighting and colors are applied in case your shell support this.
 
