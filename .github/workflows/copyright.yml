@@ -8,15 +8,10 @@ name: Copyright & Licenses
 on:
   pull_request:
 
-permissions:
-  contents: read
-  pull-requests: read
-
 jobs:
   reuse-me:
     name: REUSE compliance
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - uses: dev-build-deploy/reuse-me@v0
-        with:
-          token: ${{ github.token }}
