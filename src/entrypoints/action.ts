@@ -56,7 +56,7 @@ const setConfiguration = () => {
 
   const pullrequestOnly = core.getInput("include-commits")
     ? !core.getBooleanInput("include-commits")
-    : github.context.payload.pull_request.base.repo.base.allow_rebase_merge === false;
+    : github.context.payload.pull_request.base.repo.allow_rebase_merge === false;
 
   // Set the global configuration
   const config = Configuration.getInstance();
