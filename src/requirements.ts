@@ -79,12 +79,13 @@ export class RequirementError extends Error {
       new ExpressiveMessage()
         .id(this.commit.commit.hash)
         .error(this.highlightString(this.description, highlight))
+        .lineNumber(1)
         .caret(data.index, data.value?.length || 0)
         .context(
           this.commit.commit.body.split("\n").length > 1 && this.commit.commit.body[0] !== ""
             ? [this.commit.commit.message, "", ...this.commit.commit.body.split("\n")]
             : [this.commit.commit.message],
-          0
+          1
         )
     );
     this.message = this.errors.map(e => e.toString()).join("\n");
