@@ -8,7 +8,7 @@ import simpleGit from "simple-git";
 import * as github from "@actions/github";
 import * as core from "@actions/core";
 import assert from "assert";
-import { ICommit } from "./conventional_commit";
+import { ICommit, getCommit } from "@dev-build-deploy/commit-it";
 
 /** DataSource abstraction interface
  * @interface IDataSource
@@ -29,18 +29,8 @@ export class GitSource implements IDataSource {
   }
 
   async getCommitMessages(): Promise<ICommit[]> {
-    const data = await simpleGit().log({
-      from: this.sourceBranch,
-      to: "HEAD",
-    });
-
-    return data.all.map((commit: any) => {
-      return {
-        hash: commit.hash,
-        message: commit.message,
-        body: commit.body,
-      } as ICommit;
-    });
+    const data = await simpleGit().log({ from: this.sourceBranch, to: "HEAD" });
+    return data.all.map(commit => getCommit({ hash: commit.hash }));
   }
 }
 
@@ -53,15 +43,12 @@ export class GitHubSource implements IDataSource {
     const pullRequestNumber = github.context.payload.pull_request?.number;
     assert(pullRequestNumber);
 
-    const commits = await octokit.rest.pulls.listCommits({
-      ...github.context.repo,
-      pull_number: pullRequestNumber,
-    });
+    const commits = await octokit.rest.pulls.listCommits({ ...github.context.repo, pull_number: pullRequestNumber });
 
-    return commits.data.map((commit: any) => {
+    return commits.data.map(commit => {
       return {
         hash: commit.sha,
-        message: commit.commit.message.split("\n")[0],
+        subject: commit.commit.message.split("\n")[0],
         body: commit.commit.message.split("\n").slice(2).join("\n"),
       };
     });

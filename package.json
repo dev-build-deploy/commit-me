@@ -17,7 +17,7 @@
     "build": "run-p build:*",
     "build:cli": "ncc build -o lib/cli src/entrypoints/cli.ts",
     "build:action": "ncc build -o lib/action src/entrypoints/action.ts",
-    "test": "jest",
+    "test": "jest --coverage",
     "lint": "eslint --ext .ts .",
     "format": "prettier --write **/*.ts && prettier --write **/**/*.ts"
   },
@@ -27,9 +27,9 @@
   "dependencies": {
     "@actions/core": "^1.10.0",
     "@actions/github": "^5.1.1",
+    "@dev-build-deploy/commit-it": "^0.2.1",
     "@dev-build-deploy/diagnose-it": "^0.0.11",
     "commander": "^10.0.1",
-    "probot": "^12.2.4",
     "simple-git": "^3.19.0"
   },
   "devDependencies": {

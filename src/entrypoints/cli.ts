@@ -46,8 +46,8 @@ program
 
     for (const commit of results) {
       console.log(
-        `${commit.errors.length === 0 ? "✅" : "❌"} ${commit.commit.hash}: ${commit.commit.message.substring(0, 77)}${
-          commit.commit.message.length > 80 ? "..." : ""
+        `${commit.errors.length === 0 ? "✅" : "❌"} ${commit.commit.hash}: ${commit.commit.subject.substring(0, 77)}${
+          commit.commit.subject.length > 80 ? "..." : ""
         }`
       );
       commit.errors.forEach(error => console.log(error));
