@@ -10,7 +10,7 @@ import * as repository from "../repository";
 import { GitHubSource } from "../datasources";
 import { IValidationResult, validateCommits, validatePullRequest } from "../validator";
 import { updatePullRequestLabels } from "../github";
-import { ICommit, IConventionalCommit } from "../conventional_commit";
+import { isConventionalCommit, ICommit, IConventionalCommit } from "@dev-build-deploy/commit-it";
 import assert from "assert";
 import { Configuration } from "../configuration";
 
@@ -23,9 +23,12 @@ const determineLabel = async (commits: IValidationResult[]): Promise<"breaking" 
   let type: "breaking" | "feature" | "fix" | undefined;
 
   for (const commit of commits) {
-    if (commit.conventionalCommit?.breaking) return "breaking";
-    if (commit.conventionalCommit?.type === "feat") type = "feature";
-    else if (commit.conventionalCommit?.type === "fix" && type !== "feature") type = "fix";
+    if (!isConventionalCommit(commit.commit)) continue;
+
+    const convCommit = commit.commit as IConventionalCommit;
+    if (convCommit.breaking) return "breaking";
+    if (convCommit.type === "feat") type = "feature";
+    else if (convCommit.type === "fix" && type !== "feature") type = "fix";
   }
 
   return type;
@@ -40,11 +43,7 @@ const reportErrorMessages = (results: IValidationResult[]) => {
   let errorCount = 0;
 
   for (const commit of results) {
-    core.info(
-      `${commit.errors.length === 0 ? "✅" : "❌"} ${commit.commit.hash}: ${commit.commit.message.substring(0, 77)}${
-        commit.commit.message.length > 80 ? "..." : ""
-      }`
-    );
+    core.info(`${commit.errors.length === 0 ? "✅" : "❌"} ${commit.commit.hash}: ${commit.commit.subject}`);
     commit.errors.forEach(error => core.error(error, { title: "Conventional Commit Compliance" }));
     errorCount += commit.errors.length;
   }
@@ -116,12 +115,10 @@ async function run(): Promise<void> {
       const resultPullrequest = validatePullRequest(
         {
           hash: `#${github.context.payload.pull_request.number}`,
-          message: github.context.payload.pull_request.title,
+          subject: github.context.payload.pull_request.title,
           body: github.context.payload.pull_request.body ?? "",
         } as ICommit,
-        resultCommits
-          .map(commit => commit.conventionalCommit as IConventionalCommit)
-          .filter(commit => commit !== undefined)
+        resultCommits.map(commit => commit.commit as IConventionalCommit).filter(commit => commit !== undefined)
       );
       allResults.push(resultPullrequest);
       errorCount += reportErrorMessages([resultPullrequest]);

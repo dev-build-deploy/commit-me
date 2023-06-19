@@ -85,7 +85,27 @@ jobs:
           include-commits: false  # OPTIONAL; enforces the exclusion of commits associated with your Pull Request
 ```
 
-In addition, above example has disabled pull request label management, just to show 
+In addition, above example has disabled pull request label management.
+
+### Limiting Conventional Commit Type and/or Scope
+
+You can limit the Conventional Commit Type and/or Scope using the related input parameters:
+
+```yaml
+- uses: dev-build-deploy/commit-me@v0
+  with:
+    # OPTIONAL; Enforce that each commit contains a predefined scope
+    scope: |
+      backend
+      frontend
+    # OPTIONAL; Limit the Conventional Commits type to `feat`, `fix`, `docs` and a custom entry `debt`
+    types: |
+      feat
+      fix
+      docs
+      debt
+```
+
 
 ### Event triggers & activities
 
@@ -107,6 +127,7 @@ In addition, we recommend the following activity types:
 | `token` | *NO* | GitHub token needed to access your commits in your pull request. This is **only** required in case you want to:<br><ul><li>Validate commits associated with your Pull Request</li><li>Update labels in your Pull Request</li></ul> |
 | `update-labels` | *NO* | Allow CommitMe to manage [labels](#pull-request-labels) based on the [Conventional Commits] metadata (requires `pull-requests:write` permission), defaults to `true` |
 | `include-commits` | *NO* | Include commits associated with the Pull Request; by default we use the repository configuration settings to determine this value (requires `contents:write` permission if **NOT** set). |
+| 
 
 ### Permissions
 

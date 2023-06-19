@@ -4,6 +4,8 @@ SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
 SPDX-License-Identifier: GPL-3.0-or-later
 */
 
+import { IConventionalCommitOptions } from "@dev-build-deploy/commit-it";
+
 /**
  * Configuration class
  * @class Configuration
@@ -12,18 +14,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
  * @member scopes List of scopes to validate against
  * @member types List of types to validate against
  */
-class Configuration {
+class Configuration implements IConventionalCommitOptions {
   private static _instance: Configuration;
 
-  includeCommits: boolean;
-  includePullRequest: boolean;
+  includeCommits = false;
+  includePullRequest = false;
   scopes?: string[];
   types?: string[];
-
-  private constructor() {
-    this.includeCommits = false;
-    this.includePullRequest = false;
-  }
 
   static getInstance() {
     if (!Configuration._instance) {
