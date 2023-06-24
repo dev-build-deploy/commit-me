@@ -48,4 +48,3 @@ jobs:
         uses: actions/publish-action@v0.2.2
         with:
           source-tag: ${{ fromJSON(needs.release-me.outputs.release).tag_name }}
-        
