@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 # CommitMe
 
-CommitMe provides a [GitHub Action](#cicd-validation-github-action) and [Command Line Interface](#local-development-command-line-interface) for:
+CommitMe provides a [Pre-commit hook](#pre-commit), [GitHub Action](#cicd-validation-github-action), and [Command Line Interface](#local-development-command-line-interface) for:
 
 - Validating commit messages against [Conventional Commits] and extended [Pull Request](./docs/specifications.md#extended-pull-request-specification) and [Commit Message](./docs/specifications.md#extended-conventional-commits-specification) specifications
 
@@ -14,6 +14,20 @@ CommitMe provides a [GitHub Action](#cicd-validation-github-action) and [Command
 
 - Adding labels (`feature`, `fix`, or `breaking`) to your Pull Request
 - Limiting Conventional Commits `scope` and `types`.
+
+## Pre-commit hook
+
+You can add CommitMe as a [pre-commit](https://pre-commit.com) by including it in your `.pre-commit.config.yaml` file, e.g.:
+
+```yaml
+repos:
+- repo: https://github.com/dev-build-deploy/commit-me
+  rev: v0.12.0
+  hooks:
+  - id: commit-me
+```
+
+> **NOTE**: The pre-commit hook will **IGNORE** empty commits (`git commit --allow-empty [...]`).
 
 ## CICD Validation (GitHub Action)
 
