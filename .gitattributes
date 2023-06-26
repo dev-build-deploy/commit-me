@@ -4,3 +4,4 @@
 
 /lib/cli/index.js linguist-generated=true
 /lib/action/index.js linguist-generated=true
+/lib/precommit/index.js linguist-generated=true
