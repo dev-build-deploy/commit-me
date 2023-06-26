@@ -17,7 +17,10 @@ CommitMe provides a [Pre-commit hook](#pre-commit), [GitHub Action](#cicd-valida
 
 ## Pre-commit hook
 
-You can add CommitMe as a [pre-commit](https://pre-commit.com) by including it in your `.pre-commit.config.yaml` file, e.g.:
+You can add CommitMe as a [pre-commit](https://pre-commit.com) by:
+
+1. [Installing pre-commit](https://pre-commit.com/#install)
+2. Including CommitMe in your `.pre-commit.config.yaml` file, e.g.:
 
 ```yaml
 repos:
@@ -26,8 +29,10 @@ repos:
   hooks:
   - id: commit-me
 ```
-
-> **NOTE**: The pre-commit hook will **IGNORE** empty commits (`git commit --allow-empty [...]`).
+3. Installing the `commit-msg` hooks
+```
+$ pre-commit install --hook-type commit-msg 
+```
 
 ## CICD Validation (GitHub Action)
 

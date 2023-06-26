@@ -7,6 +7,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import simpleGit from "simple-git";
 import * as github from "@actions/github";
 import * as core from "@actions/core";
+import * as fs from "fs";
 import assert from "assert";
 import { ICommit, getCommit } from "@dev-build-deploy/commit-it";
 
@@ -16,6 +17,25 @@ import { ICommit, getCommit } from "@dev-build-deploy/commit-it";
  */
 export interface IDataSource {
   getCommitMessages(): Promise<ICommit[]>;
+}
+
+/**
+ * File data source for parsing a file containing the commit message.
+ */
+export class FileSource implements IDataSource {
+  file: string;
+
+  constructor(file: string) {
+    this.file = file;
+
+    if (!fs.existsSync(this.file)) {
+      throw new Error(`File ${this.file} does not exist`);
+    }
+  }
+
+  async getCommitMessages(): Promise<ICommit[]> {
+    return [getCommit({ hash: "HEAD", message: fs.readFileSync(this.file, "utf8") })];
+  }
 }
 
 /**

@@ -4,7 +4,6 @@
 - id: commit-me
   name: CommitMe - Conventional Commit message validation
   description: Validates your commits agains the Conventional Commits specification
-  entry: commit-me
+  entry: pre-commit-me
   language: node
-  args: ['check', '--base-branch', 'HEAD~1']
-  always_run: true
+  stages: [commit-msg]

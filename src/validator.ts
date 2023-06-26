@@ -51,7 +51,7 @@ function validateCommit(commit: ICommit) {
  */
 export function validatePullRequest(pullrequest: ICommit, commits: IConventionalCommit[]) {
   const result = validateCommit(pullrequest);
-  
+
   if (result.errors.length > 0) return result;
 
   const orderValue = (commit?: ICommit | IConventionalCommit) => {

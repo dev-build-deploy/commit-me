@@ -8,7 +8,9 @@
   "homepage": "https://github.com/dev-build-deploy/commit-me",
   "keywords": [
     "github",
-    "action"
+    "action",
+    "conventional-commits",
+    "pre-commit"
   ],
   "bugs": {
     "url": "https://github.com/dev-build-deploy/commit-me/issues"
@@ -17,12 +19,14 @@
     "build": "run-p build:*",
     "build:cli": "ncc build -o lib/cli src/entrypoints/cli.ts",
     "build:action": "ncc build -o lib/action src/entrypoints/action.ts",
+    "build:pre-commit": "ncc build -o lib/precommit src/entrypoints/pre-commit.ts",
     "test": "jest --coverage",
     "lint": "eslint --ext .ts .",
     "format": "prettier --write **/*.ts && prettier --write **/**/*.ts"
   },
   "bin": {
-    "commit-me": "./bin/commit-me"
+    "commit-me": "./bin/commit-me",
+    "pre-commit-me": "./bin/pre-commit-me"
   },
   "dependencies": {
     "@actions/core": "^1.10.0",
