@@ -8,7 +8,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 CommitMe provides a [Pre-commit hook](#pre-commit), [GitHub Action](#cicd-validation-github-action), and [Command Line Interface](#local-development-command-line-interface) for:
 
-- Validating commit messages against [Conventional Commits] and extended [Pull Request](./docs/specifications.md#extended-pull-request-specification) and [Commit Message](./docs/specifications.md#extended-conventional-commits-specification) specifications
+- Validating commit messages against the [Conventional Commits] specification
+- Ensure correct integration with GitHub based on extended [Pull Request](./docs/specifications.md#extended-pull-request-specification) and [Commit Message](./docs/specifications.md#extended-conventional-commits-specification) specifications
 
 <img src="./docs/images/cli_example.svg" width="100%">
 
