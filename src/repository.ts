@@ -12,6 +12,7 @@ import * as core from "@actions/core";
  * - Whether squash commits are enabled and whether the default subject is based on the Pull Request title
  * - Whether rebase commits are enabled
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function checkConfiguration(repository: any) {
   if (
     repository.allow_merge_commit === undefined ||
