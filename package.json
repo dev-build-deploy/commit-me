@@ -37,6 +37,7 @@
     "simple-git": "^3.19.0"
   },
   "devDependencies": {
+    "@octokit/openapi-types": "^18.0.0",
     "@swc/jest": "^0.2.26",
     "@types/jest": "^29.5.2",
     "@types/node": "^18.16.16",

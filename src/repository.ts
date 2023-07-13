@@ -5,6 +5,9 @@ SPDX-License-Identifier: GPL-3.0-or-later
 */
 
 import * as core from "@actions/core";
+import type { components as octokitComponents } from "@octokit/openapi-types";
+
+type Repository = octokitComponents["schemas"]["repository"];
 
 /**
  * Checks the repository merge configuration;
@@ -12,8 +15,7 @@ import * as core from "@actions/core";
  * - Whether squash commits are enabled and whether the default subject is based on the Pull Request title
  * - Whether rebase commits are enabled
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function checkConfiguration(repository: any) {
+export function checkConfiguration(repository: Repository) {
   if (
     repository.allow_merge_commit === undefined ||
     repository.allow_squash_merge === undefined ||
