@@ -22,6 +22,7 @@
     "moduleResolution": "node",
     "types": ["jest", "node"],
     "esModuleInterop": true,
+    "stripInternal": true,
 
     /* Advanced Options */
     "forceConsistentCasingInFileNames": true,
