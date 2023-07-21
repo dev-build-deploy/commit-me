@@ -1,5 +1,5 @@
 # SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: MIT
 
 - id: commit-me
   name: CommitMe - Conventional Commit message validation
