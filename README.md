@@ -64,6 +64,9 @@ jobs:
         with:
           token: ${{ github.token }}  # Required to retrieve the commits associated with your Pull Request
           include-commits: true  # OPTIONAL; forces the inclusion of commits associated with your Pull Request
+        env:
+          # Enable colored output in GitHub Actions
+          FORCE_COLOR: 3
 ```
 
 _You can find more details in the [dedicated documentation](./docs/github-action.md)_
