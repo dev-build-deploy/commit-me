@@ -10,7 +10,7 @@ import * as github from "@actions/github";
  * Updates the (managed) Pull Request labels based on the commit message.
  * @param label The label to be applied to the pull request ("breaking", "feature", "fix")
  */
-export async function updatePullRequestLabels(label: "fix" | "feature" | "breaking") {
+export async function updatePullRequestLabels(label: "fix" | "feature" | "breaking"): Promise<void> {
   const octokit = github.getOctokit(core.getInput("token"));
   const pullRequestNumber = github.context.payload.number;
 

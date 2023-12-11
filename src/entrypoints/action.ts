@@ -3,15 +3,17 @@ SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
 SPDX-License-Identifier: MIT
 */
 
+import assert from "assert";
+
 import * as core from "@actions/core";
 import * as github from "@actions/github";
-import * as repository from "../repository";
-import { GitHubSource } from "../datasources";
-import { IValidationResult, validateCommits, validatePullRequest } from "../validator";
-import { updatePullRequestLabels } from "../github";
 import { isConventionalCommit, ICommit, IConventionalCommit } from "@dev-build-deploy/commit-it";
-import assert from "assert";
+
 import { Configuration } from "../configuration";
+import { GitHubSource } from "../datasources";
+import { updatePullRequestLabels } from "../github";
+import * as repository from "../repository";
+import { IValidationResult, validateCommits, validatePullRequest } from "../validator";
 
 /**
  * Determines the label to be applied to the pull request.
@@ -38,7 +40,7 @@ const determineLabel = async (commits: IValidationResult[]): Promise<"breaking" 
  * @param results The validation results to report
  * @returns The total number of errors reported
  */
-const reportErrorMessages = (results: IValidationResult[]) => {
+const reportErrorMessages = (results: IValidationResult[]): number => {
   let errorCount = 0;
 
   for (const commit of results) {
@@ -49,7 +51,7 @@ const reportErrorMessages = (results: IValidationResult[]) => {
   return errorCount;
 };
 
-const setConfiguration = () => {
+const setConfiguration = (): void => {
   assert(github.context.payload.pull_request);
 
   const pullrequestOnly = core.getInput("include-commits")

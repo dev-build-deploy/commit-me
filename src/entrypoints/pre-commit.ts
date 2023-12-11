@@ -5,10 +5,13 @@ SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
 SPDX-License-Identifier: MIT
 */
 
+import os from "os";
+
 import { Command } from "commander";
+
+import { Configuration } from "../configuration";
 import { FileSource } from "../datasources";
 import { validateCommits } from "../validator";
-import { Configuration } from "../configuration";
 
 const program = new Command();
 
@@ -28,7 +31,7 @@ program
 
     let errorCount = 0;
     validateCommits(commits).forEach(commit => {
-      commit.errors.forEach(error => console.log(error));
+      commit.errors.forEach(error => console.log(error, os.EOL));
       errorCount += commit.errors.length;
     });
 

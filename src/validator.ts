@@ -3,13 +3,14 @@ SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
 SPDX-License-Identifier: MIT
 */
 
-import { ExpressiveMessage } from "@dev-build-deploy/diagnose-it";
 import {
   ICommit,
   IConventionalCommit,
   getConventionalCommit,
   ConventionalCommitError,
 } from "@dev-build-deploy/commit-it";
+import { DiagnosticsMessage } from "@dev-build-deploy/diagnose-it";
+
 import { Configuration } from "./configuration";
 
 /**
@@ -29,14 +30,14 @@ export interface IValidationResult {
  * @param commit Commit message to validate against the Conventional Commit specification
  * @returns Validation result
  */
-function validateCommit(commit: ICommit) {
+function validateCommit(commit: ICommit): IValidationResult {
   const result: IValidationResult = { commit: commit, errors: [] };
 
   try {
     result.commit = getConventionalCommit(commit, Configuration.getInstance());
   } catch (error) {
     if (!(error instanceof ConventionalCommitError)) throw error;
-    error.errors.forEach(e => result.errors.push(e.message));
+    error.errors.forEach(e => result.errors.push(e.toString()));
   }
 
   return result;
@@ -48,12 +49,12 @@ function validateCommit(commit: ICommit) {
  * @param commits The commits associated with the pull request
  * @returns Validation result
  */
-export function validatePullRequest(pullrequest: ICommit, commits: IConventionalCommit[]) {
+export function validatePullRequest(pullrequest: ICommit, commits: IConventionalCommit[]): IValidationResult {
   const result = validateCommit(pullrequest);
 
   if (result.errors.length > 0) return result;
 
-  const orderValue = (commit?: ICommit | IConventionalCommit) => {
+  const orderValue = (commit?: ICommit | IConventionalCommit): number => {
     if (!commit || !("type" in commit)) return 0;
     if (commit.breaking) return 3;
     if (commit.type === "feat") return 2;
@@ -66,14 +67,11 @@ export function validatePullRequest(pullrequest: ICommit, commits: IConventional
 
   if (pullRequestValue < commitsValue) {
     result.errors.push(
-      new ExpressiveMessage()
-        .id(result.commit.hash)
-        .error(
-          `A Pull Request title MUST correlate with a Semantic Versioning identifier (\`MAJOR\`, \`MINOR\`, or \`PATCH\`) with the same or higher precedence than its associated commits`
-        )
-        .lineNumber(1)
-        .caret(0, 0)
-        .toString()
+      DiagnosticsMessage.createError(result.commit.hash, {
+        text: `A Pull Request title MUST correlate with a Semantic Versioning identifier (\`MAJOR\`, \`MINOR\`, or \`PATCH\`) with the same or higher precedence than its associated commits`,
+        linenumber: 1,
+        column: 1,
+      }).toString()
     );
   }
 

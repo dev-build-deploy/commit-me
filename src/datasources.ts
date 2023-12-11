@@ -3,12 +3,13 @@ SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
 SPDX-License-Identifier: MIT
 */
 
-import simpleGit from "simple-git";
-import * as github from "@actions/github";
-import * as core from "@actions/core";
-import * as fs from "fs";
 import assert from "assert";
+import * as fs from "fs";
+
+import * as core from "@actions/core";
+import * as github from "@actions/github";
 import { ICommit, getCommit } from "@dev-build-deploy/commit-it";
+import simpleGit from "simple-git";
 
 /** DataSource abstraction interface
  * @interface IDataSource
