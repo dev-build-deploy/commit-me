@@ -45,3 +45,6 @@ jobs:
             revert
             style
             test
+        env:
+          # Enable colored output in GitHub Actions
+          FORCE_COLOR: 3
