@@ -21,7 +21,7 @@ class Configuration implements IConventionalCommitOptions {
   scopes?: string[];
   types?: string[];
 
-  static getInstance() {
+  static getInstance(): Configuration {
     if (!Configuration._instance) {
       Configuration._instance = new Configuration();
     }

@@ -14,7 +14,7 @@ type Repository = octokitComponents["schemas"]["repository"];
  * - Whether squash commits are enabled and whether the default subject is based on the Pull Request title
  * - Whether rebase commits are enabled
  */
-export function checkConfiguration(repository: Repository) {
+export function checkConfiguration(repository: Repository): void {
   if (
     repository.allow_merge_commit === undefined ||
     repository.allow_squash_merge === undefined ||
