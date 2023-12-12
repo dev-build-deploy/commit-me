@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-/* 
-SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
-SPDX-License-Identifier: MIT
-*/
+/*
+ * SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
+ * SPDX-License-Identifier: MIT
+ */
 
 import os from "os";
 

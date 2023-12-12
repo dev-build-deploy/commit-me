@@ -1,5 +1,5 @@
 # SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
-# SPDX-License-Identifier: CC0-1.0
+# SPDX-License-Identifier: MIT
 
 name: 'CommitMe - Conventional Commits validation'
 author: 'Kevin de Jong'

@@ -1,7 +1,7 @@
 /*
-SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
-SPDX-License-Identifier: MIT
-*/
+ * SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
+ * SPDX-License-Identifier: MIT
+ */
 
 import * as core from "@actions/core";
 import type { components as octokitComponents } from "@octokit/openapi-types";
