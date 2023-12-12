@@ -9,7 +9,7 @@ import * as fs from "fs";
 import * as core from "@actions/core";
 import * as github from "@actions/github";
 import { ICommit, getCommit } from "@dev-build-deploy/commit-it";
-import simpleGit from "simple-git";
+import { simpleGit } from "simple-git";
 
 /** DataSource abstraction interface
  * @interface IDataSource
