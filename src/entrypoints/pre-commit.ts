@@ -21,13 +21,14 @@ const program = new Command();
 program
   .name("pre-commit-me")
   .description("Conventional Commit message validation (pre-commit hook)")
+  .option("-c, --config <file>", "The configuration file to use.")
   .argument("<file>", "The file containing the commit messages to validate.")
   .action(async file => {
     // Set the global configuration
-    const config = Configuration.getInstance();
-    config.includeCommits = true;
+    const datasource = new FileSource(file);
+    await Configuration.getInstance().fromDatasource(datasource, program.opts().config);
 
-    const commits = await new FileSource(file).getCommitMessages();
+    const commits = await datasource.getCommitMessages();
 
     let errorCount = 0;
     validateCommits(commits).forEach(commit => {

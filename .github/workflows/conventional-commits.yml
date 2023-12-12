@@ -33,18 +33,13 @@ jobs:
           include-commits: true  # Forces the inclusion of commits associated with your
                                  # Pull Request without requiring the `contents:write`
                                  # permission
+          config: .github/.commit-me.json # Path to your CommitMe configuration file
           types: |  # Limit the Conventional Commits type to the following values;
-            build
-            chore
-            ci
-            docs
-            feat
-            fix
-            perf
-            refactor
-            revert
-            style
-            test
+            magic
+            void
+          scopes: | # Limit the Conventional Commits scopes to the following values;
+            foo
+            bar
         env:
           # Enable colored output in GitHub Actions
           FORCE_COLOR: 3

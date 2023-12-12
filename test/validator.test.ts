@@ -34,7 +34,7 @@ describe("Validate commit messages", () => {
       },
     ]);
     let count = 0;
-    result.forEach(item => count += item.errors.length);
+    result.forEach(item => (count += item.errors.length));
 
     // Space in between type and scope
     // Scope is not a noun

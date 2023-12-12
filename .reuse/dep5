@@ -20,3 +20,7 @@ License: CC0-1.0
 Files: .prettierrc.json
 Copyright: 2023 Kevin de Jong <monkaii@hotmail.com>
 License: CC0-1.0
+
+Files: .github/.commit-me.json
+Copyright: 2023 Kevin de Jong <monkaii@hotmail.com>
+License: CC0-1.0

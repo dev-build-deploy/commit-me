@@ -10,7 +10,7 @@ import * as github from "@actions/github";
 import { isConventionalCommit, ICommit, IConventionalCommit } from "@dev-build-deploy/commit-it";
 
 import { Configuration } from "../configuration";
-import { GitHubSource } from "../datasources";
+import { GitHubSource, IDataSource } from "../datasources";
 import { updatePullRequestLabels } from "../github";
 import * as repository from "../repository";
 import { IValidationResult, validateCommits, validatePullRequest } from "../validator";
@@ -51,7 +51,7 @@ const reportErrorMessages = (results: IValidationResult[]): number => {
   return errorCount;
 };
 
-const setConfiguration = (): void => {
+const setConfiguration = async (dataSource: IDataSource): Promise<void> => {
   assert(github.context.payload.pull_request);
 
   const pullrequestOnly = core.getInput("include-commits")
@@ -59,11 +59,10 @@ const setConfiguration = (): void => {
     : github.context.payload.pull_request.base.repo.allow_rebase_merge === false;
 
   // Set the global configuration
-  const config = Configuration.getInstance();
+  const config = await Configuration.getInstance().fromDatasource(dataSource, core.getInput("config") || undefined);
   config.includeCommits = !pullrequestOnly;
-  config.includePullRequest = true;
-  config.scopes = core.getMultilineInput("scopes") ?? [];
-  config.types = core.getMultilineInput("types") ?? [];
+  config.addScopes(core.getMultilineInput("scopes") ?? []);
+  config.addTypes(core.getMultilineInput("types") ?? []);
 };
 
 /**
@@ -72,10 +71,10 @@ const setConfiguration = (): void => {
 async function run(): Promise<void> {
   try {
     core.info("📄 CommitMe - Conventional Commit compliance validation");
-    setConfiguration();
+    const datasource = new GitHubSource();
+    await setConfiguration(datasource);
 
     core.startGroup("📝 Checking repository configuration");
-    const datasource = new GitHubSource();
     const config = Configuration.getInstance();
     const githubToken = core.getInput("token") ?? undefined;
 

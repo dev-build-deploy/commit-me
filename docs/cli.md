@@ -17,8 +17,6 @@ $ npm install -g https://github.com/dev-build-deploy/commit-me
 $ commit-me
 ```
 
-> **NOTE**: Creation of an installable package is part of the roadmap!
-
 ## Usage instructions
 
 ### Basic Usage
@@ -55,11 +53,9 @@ Options:
   -b, --base-branch <branch>  The base branch to compare the current branch with.
   -s, --scopes [scopes...]    Conventional Commits scopes to validate against.
   -t, --types [types...]      Conventional Commits types to validate against.
+  -c, --config <file>         The configuration file to use.
   -h, --help                  display help for command
 ```
-
-By default, it will use `main` as the base branch.
-
 
 Running this command...
 ```sh
@@ -70,4 +66,4 @@ $ commit-me check
 
 <img src="./images/cli_example.svg">
 
-Additionally, you can use the `--base-branch` option to change the reference branch to compare with.
+Additionally, you can use the `--base-branch` option to change the reference branch (default: `main`) to compare with.
