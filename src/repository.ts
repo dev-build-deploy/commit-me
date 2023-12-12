@@ -37,9 +37,9 @@ export function checkConfiguration(repository: Repository): void {
 
   if (repository.allow_squash_merge === true) {
     core.info(
-      repository.use_squash_pr_title_as_default
+      repository.squash_merge_commit_title === "PR_TITLE"
         ? "✅ Default squash commit subject will use the Pull Request title."
-        : "⚠️ Default squash commit subject is not based on your Pull Request title."
+        : "⚠️ Default squash commit subject is based on either your Commit message or Pull Request title."
     );
   } else {
     core.info("ℹ️ Squash commit strategy is disabled.");
