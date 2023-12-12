@@ -37,9 +37,8 @@ describe("Validate commit messages", () => {
     result.forEach(item => count += item.errors.length);
 
     // Space in between type and scope
-    // Scope is not supported
     // Scope is not a noun
-    expect(count).toBe(3);
+    expect(count).toBe(2);
   });
 
   test("Valid Pull Request message", () => {
@@ -94,9 +93,8 @@ describe("Validate commit messages", () => {
     );
 
     // Space in between type and scope
-    // Scope is not supported
     // Scope is not a noun
-    expect(result.errors.length).toBe(3);
+    expect(result.errors.length).toBe(2);
   });
 
   test("Pull Request > Commits", () => {
