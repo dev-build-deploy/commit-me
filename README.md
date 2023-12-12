@@ -5,81 +5,38 @@ SPDX-License-Identifier: MIT
 
 # CommitMe
 
-CommitMe provides a [Pre-commit hook](#pre-commit), [GitHub Action](#cicd-validation-github-action), and [Command Line Interface](#local-development-command-line-interface) for:
+CommitMe provides a [Pre-commit hook](./docs/pre-commit.md), [GitHub Action](./docs/github-action.md), and [Command Line Interface](./docs/cli.md) for validating commit messages against the [Conventional Commits] specification;
 
-- Validating commit messages against the [Conventional Commits] specification
-- Ensure correct integration with GitHub based on extended [Pull Request](./docs/specifications.md#extended-pull-request-specification) and [Commit Message](./docs/specifications.md#extended-conventional-commits-specification) specifications
+- Rich error messages to help identify non-compliances:
 
 <img src="./docs/images/cli_example.svg" width="100%">
 
-- Adding labels (`feature`, `fix`, or `breaking`) to your Pull Request
+- Adds labels (`feature`, `fix`, or `breaking`) to your Pull Request
 - Limiting Conventional Commits `scope` and `types`.
 
-## Pre-commit hook
+Please refer to the document related to your environment for more details on the usage instructions:
 
-You can add CommitMe as a [pre-commit](https://pre-commit.com) by:
+- [GitHub Actions](./docs/github-action.md)
+- [Command Line Interface](./docs/cli.md)
+- [Pre-commit Hook](./docs/pre-commit.md)
 
-1. [Installing pre-commit](https://pre-commit.com/#install)
-2. Including CommitMe in your `.pre-commit.config.yaml` file, e.g.:
+## Configuration file
 
-```yaml
-repos:
-- repo: https://github.com/dev-build-deploy/commit-me
-  rev: v0.12.0
-  hooks:
-  - id: commit-me
-```
-3. Installing the `commit-msg` hooks
-```
-$ pre-commit install --hook-type commit-msg 
+You can create a global configuration file:
+
+```json
+{
+  "types": [ "build", "chore", "ci", "docs", "style", "refactor", "perf", "test" ],
+  "scopes": [ "server", "client" ]
+}
 ```
 
-## CICD Validation (GitHub Action)
+| Configuration Item | Description |
+| -------------------| ------------|
+| `types`            | Conventional Commit types to allow. By default it always supports `feat` and `fix`. |
+| `scopes`           | Conventional Commit scopes to allow. No restrictions will be applied when not specified. |
 
-The basic workflow can be set up as such:
-
-```yaml
-name: Conventional Commits
-on:
-  pull_request:
-    types:
-      - opened
-      - edited
-      - synchronize
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}  # Ensure that only one instance of this workflow is running per Pull Request
-  cancel-in-progress: true  # Cancel any previous runs of this workflow
-
-permissions:
-  contents: read  # NOTE; you will need to change this permission to `write` in case you do not provide the `include-commits` input parameter.
-  pull-requests: write  # OPTIONAL; only required when you want CommitMe to update labels in your Pull Request, set `update-labels` to `false` if you do not require this feature.
-
-jobs:
-  commit-me:
-    name: Conventional Commits Compliance
-    runs-on: ubuntu-latest
-    steps:
-      - uses: dev-build-deploy/commit-me@v0
-        with:
-          token: ${{ github.token }}  # Required to retrieve the commits associated with your Pull Request
-          include-commits: true  # OPTIONAL; forces the inclusion of commits associated with your Pull Request
-        env:
-          # Enable colored output in GitHub Actions
-          FORCE_COLOR: 3
-```
-
-_You can find more details in the [dedicated documentation](./docs/github-action.md)_
-
-## Local Development (Command Line Interface)
-
-Performing local validation is as simple as running the `check` command:
-
-```
-$ commit-me check
-```
-
-You can find more details in the [dedicated documentation](./docs/cli.md)
+> :bulb: By default, CommitMe will attempt to load `.commit-me.json` in the root of your repository
 
 ## Contributing
 

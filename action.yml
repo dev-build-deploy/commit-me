@@ -31,6 +31,10 @@ inputs:
   types:
     description: 'Conventional Commits types allowed for this repository; by default we accept all types.'
     required: false
+  
+  config:
+    description: 'Path to the configuration file; by default ".pre-commit.json" is used.'
+    required: false
 
 runs:
   using: 'node20'

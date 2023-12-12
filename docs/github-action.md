@@ -82,6 +82,7 @@ jobs:
         with:
           update-labels: false  # OPTIONAL; do not update the Pull Request labels based on the Conventional Commits information.
           include-commits: false  # OPTIONAL; enforces the exclusion of commits associated with your Pull Request
+          config: '.github/.commit-me.json' # OPTIONAL; by default it will look in the root of your repository
 ```
 
 In addition, above example has disabled pull request label management.
@@ -97,10 +98,8 @@ You can limit the Conventional Commit Type and/or Scope using the related input 
     scope: |
       backend
       frontend
-    # OPTIONAL; Limit the Conventional Commits type to `feat`, `fix`, `docs` and a custom entry `debt`
+    # OPTIONAL; Limit the Conventional Commits type to `feat`, `fix`, and a custom entries `docs` and `debt`
     types: |
-      feat
-      fix
       docs
       debt
 ```
@@ -126,7 +125,7 @@ In addition, we recommend the following activity types:
 | `token` | *NO* | GitHub token needed to access your commits in your pull request. This is **only** required in case you want to:<br><ul><li>Validate commits associated with your Pull Request</li><li>Update labels in your Pull Request</li></ul> |
 | `update-labels` | *NO* | Allow CommitMe to manage [labels](#pull-request-labels) based on the [Conventional Commits] metadata (requires `pull-requests:write` permission), defaults to `true` |
 | `include-commits` | *NO* | Include commits associated with the Pull Request; by default we use the repository configuration settings to determine this value (requires `contents:write` permission if **NOT** set). |
-| 
+| `config` | *NO* | Path to the configuration file; by default `.pre-commit.json` is used. |
 
 ### Permissions
 

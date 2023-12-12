@@ -29,18 +29,19 @@ program
   .option("-b, --base-branch <branch>", "The base branch to compare the current branch with.")
   .option("-s, --scopes [scopes...]", "Conventional Commits scopes to validate against.")
   .option("-t, --types [types...]", "Conventional Commits types to validate against.")
+  .option("-c, --config <file>", "The configuration file to use.")
   .action(async options => {
     console.log("📄 CommitMe - Conventional Commit compliance validation");
     console.log("-------------------------------------------------------");
 
-    // Set the global configuration
-    const config = Configuration.getInstance();
-    config.includeCommits = true;
-    config.includePullRequest = false;
-    config.scopes = options.scopes ?? [];
-    config.types = options.types ?? [];
-
+    // Set the data source
     const datasource = new GitSource(options.baseBranch ?? "main");
+
+    // Set the global configuration
+    const config = await Configuration.getInstance().fromDatasource(datasource, options.config);
+    config.addScopes(options.scopes ?? []);
+    config.addTypes(options.types ?? []);
+
     const commits = await datasource.getCommitMessages();
 
     let errorCount = 0;
