@@ -49,7 +49,7 @@ export class GitSource implements IDataSource {
   }
 
   async getCommitMessages(): Promise<ICommit[]> {
-    const data = await simpleGit().log({ from: this.sourceBranch, to: "HEAD" });
+    const data = await simpleGit().log({ from: this.sourceBranch, to: "@{push}" });
     return data.all.map(commit => getCommit({ hash: commit.hash }));
   }
 }
