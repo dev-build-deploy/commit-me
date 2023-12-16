@@ -45,23 +45,28 @@ program
     const commits = await datasource.getCommitMessages();
 
     let errorCount = 0;
+    let warningCount = 0;
     const results = validateCommits(commits);
 
     for (const commit of results) {
       console.log(
-        `${commit.errors.length === 0 ? "✅" : "❌"} ${commit.commit.hash}: ${commit.commit.subject.substring(0, 77)}${
-          commit.commit.subject.length > 80 ? "..." : ""
+        `${commit.errors.length === 0 ? "✅" : "❌"} ${commit.hash}: ${commit.subject.substring(0, 77)}${
+          commit.subject.length > 80 ? "..." : ""
         }`
       );
-      commit.errors.forEach(error => console.log(error, os.EOL));
+
+      commit.errors.forEach(err => console.log(err.toString(), os.EOL));
+      commit.warnings.forEach(err => console.log(err.toString(), os.EOL));
+
       errorCount += commit.errors.length;
+      warningCount += commit.warnings.length;
     }
 
     console.log("-------------------------------------------------------");
     if (errorCount === 0) {
       console.log(`✅ All your commits are compliant with Conventional Commit.`);
     } else {
-      program.error(`❌ Found ${errorCount} Conventional Commit compliance issues.`);
+      program.error(`❌ Found ${errorCount} Conventional Commit compliance issues, and ${warningCount} warnings.`);
     }
   });
 

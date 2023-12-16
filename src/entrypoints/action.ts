@@ -7,29 +7,28 @@ import assert from "assert";
 
 import * as core from "@actions/core";
 import * as github from "@actions/github";
-import { isConventionalCommit, ICommit, IConventionalCommit } from "@dev-build-deploy/commit-it";
+import { Commit, ConventionalCommit } from "@dev-build-deploy/commit-it";
 
 import { Configuration } from "../configuration";
 import { GitHubSource, IDataSource } from "../datasources";
 import { updatePullRequestLabels } from "../github";
 import * as repository from "../repository";
-import { IValidationResult, validateCommits, validatePullRequest } from "../validator";
+import { validateCommits, validatePullRequest } from "../validator";
 
 /**
  * Determines the label to be applied to the pull request.
  * @param commits The validated commits to determine the label from
  * @returns The label to be applied to the pull request ("breaking", "feature", "fix" or undefined)
  */
-const determineLabel = async (commits: IValidationResult[]): Promise<"breaking" | "feature" | "fix" | undefined> => {
+const determineLabel = async (commits: ConventionalCommit[]): Promise<"breaking" | "feature" | "fix" | undefined> => {
   let type: "breaking" | "feature" | "fix" | undefined;
 
   for (const commit of commits) {
-    if (!isConventionalCommit(commit.commit)) continue;
+    if (!commit.isValid) continue;
 
-    const convCommit = commit.commit as IConventionalCommit;
-    if (convCommit.breaking) return "breaking";
-    if (convCommit.type === "feat") type = "feature";
-    else if (convCommit.type === "fix" && type !== "feature") type = "fix";
+    if (commit.breaking) return "breaking";
+    if (commit.type?.toLowerCase() === "feat") type = "feature";
+    else if (commit.type?.toLowerCase() === "fix" && type !== "feature") type = "fix";
   }
 
   return type;
@@ -40,15 +39,20 @@ const determineLabel = async (commits: IValidationResult[]): Promise<"breaking" 
  * @param results The validation results to report
  * @returns The total number of errors reported
  */
-const reportErrorMessages = (results: IValidationResult[]): number => {
+const reportErrorMessages = (results: ConventionalCommit[]): { errors: number; warnings: number } => {
   let errorCount = 0;
+  let warningCount = 0;
 
   for (const commit of results) {
-    core.info(`${commit.errors.length === 0 ? "✅" : "❌"} ${commit.commit.hash}: ${commit.commit.subject}`);
-    commit.errors.forEach(error => core.error(error, { title: "Conventional Commit Compliance" }));
+    core.info(`${commit.errors.length === 0 ? "✅" : "❌"} ${commit.hash}: ${commit.subject}`);
+    commit.errors.forEach(error => core.error(error.toString(), { title: "Conventional Commit Compliance" }));
     errorCount += commit.errors.length;
+
+    commit.warnings.forEach(warning => core.warning(warning.toString(), { title: "Conventional Commit Compliance" }));
+    warningCount += commit.warnings.length;
   }
-  return errorCount;
+
+  return { errors: errorCount, warnings: warningCount };
 };
 
 const setConfiguration = async (dataSource: IDataSource): Promise<void> => {
@@ -108,32 +112,40 @@ async function run(): Promise<void> {
     const resultCommits = validateCommits(commits);
 
     let errorCount = 0;
-    const allResults: IValidationResult[] = [...resultCommits];
+    let warningCount = 0;
+    const allResults: ConventionalCommit[] = [...resultCommits];
 
     if (config.includePullRequest === true) {
       core.startGroup(`🔎 Scanning Pull Request`);
       const resultPullrequest = validatePullRequest(
-        {
+        Commit.fromString({
           hash: `#${github.context.payload.pull_request.number}`,
-          subject: github.context.payload.pull_request.title,
-          body: github.context.payload.pull_request.body ?? "",
-        } as ICommit,
-        resultCommits.map(commit => commit.commit as IConventionalCommit).filter(commit => commit !== undefined)
+          message: [github.context.payload.pull_request.title, "", github.context.payload.pull_request.body].join("\n"),
+        }),
+        allResults
       );
       allResults.push(resultPullrequest);
-      errorCount += reportErrorMessages([resultPullrequest]);
+      const counts = reportErrorMessages([resultPullrequest]);
+      errorCount += counts.errors;
+      warningCount += counts.warnings;
+
       core.endGroup();
     }
 
     if (config.includeCommits === true) {
       core.startGroup("🔎 Scanning Commits associated with Pull Request");
-      errorCount += reportErrorMessages(resultCommits);
+      const counts = reportErrorMessages(resultCommits);
+      errorCount += counts.errors;
+      warningCount += counts.warnings;
+
       core.endGroup();
     }
 
     if (errorCount > 0) {
-      core.setFailed(`❌ Found ${errorCount} Conventional Commits compliance issues.`);
+      core.setFailed(`❌ Found ${errorCount} Conventional Commit compliance issues, and ${warningCount} warnings.`);
       return;
+    } else if (warningCount > 0) {
+      core.warning(`⚠️ Found ${warningCount} Conventional Commit compliance warnings.`);
     }
 
     // Updating the pull request label

@@ -3,44 +3,18 @@
  * SPDX-License-Identifier: MIT
  */
 
-import {
-  ICommit,
-  IConventionalCommit,
-  getConventionalCommit,
-  ConventionalCommitError,
-} from "@dev-build-deploy/commit-it";
-import { DiagnosticsMessage } from "@dev-build-deploy/diagnose-it";
+import { Commit, ConventionalCommit } from "@dev-build-deploy/commit-it";
+import { DiagnosticsMessage, FixItHint } from "@dev-build-deploy/diagnose-it";
 
 import { Configuration } from "./configuration";
-
-/**
- * Validation result interface
- * @interface IValidationResult
- * @member commit The commit that was validated
- * @member conventionalCommit The associated conventional commit
- * @member errors List of error messages
- */
-export interface IValidationResult {
-  commit: ICommit | IConventionalCommit;
-  errors: string[];
-}
 
 /**
  * Validates a single commit message against the Conventional Commit specification.
  * @param commit Commit message to validate against the Conventional Commit specification
  * @returns Validation result
  */
-function validateCommit(commit: ICommit): IValidationResult {
-  const result: IValidationResult = { commit: commit, errors: [] };
-
-  try {
-    result.commit = getConventionalCommit(commit, Configuration.getInstance());
-  } catch (error) {
-    if (!(error instanceof ConventionalCommitError)) throw error;
-    error.errors.forEach(e => result.errors.push(e.toString()));
-  }
-
-  return result;
+function validateCommit(commit: Commit): ConventionalCommit {
+  return ConventionalCommit.fromCommit(commit, Configuration.getInstance());
 }
 
 /**
@@ -49,29 +23,31 @@ function validateCommit(commit: ICommit): IValidationResult {
  * @param commits The commits associated with the pull request
  * @returns Validation result
  */
-export function validatePullRequest(pullrequest: ICommit, commits: IConventionalCommit[]): IValidationResult {
+export function validatePullRequest(pullrequest: Commit, commits: ConventionalCommit[]): ConventionalCommit {
   const result = validateCommit(pullrequest);
 
-  if (result.errors.length > 0) return result;
+  if (!result.isValid) return result;
 
-  const orderValue = (commit?: ICommit | IConventionalCommit): number => {
-    if (!commit || !("type" in commit)) return 0;
+  const orderValue = (commit: ConventionalCommit): number => {
     if (commit.breaking) return 3;
-    if (commit.type === "feat") return 2;
-    if (commit.type === "fix") return 1;
+    if (commit.type?.toLowerCase() === "feat") return 2;
+    if (commit.type?.toLowerCase() === "fix") return 1;
     return 0;
   };
 
-  const pullRequestValue = orderValue(result.commit);
-  const commitsValue = orderValue(commits.sort((a, b) => (orderValue(a) < orderValue(b) ? 1 : -1))[0]);
+  const pullRequestValue = orderValue(result);
+  const validConventionalCommits = commits.filter(commit => commit.isValid);
+  const commitsValue = orderValue(validConventionalCommits.sort((a, b) => (orderValue(a) < orderValue(b) ? 1 : -1))[0]);
 
   if (pullRequestValue < commitsValue) {
     result.errors.push(
-      DiagnosticsMessage.createError(result.commit.hash, {
+      DiagnosticsMessage.createError(result.hash, {
         text: `A Pull Request title MUST correlate with a Semantic Versioning identifier (\`MAJOR\`, \`MINOR\`, or \`PATCH\`) with the same or higher precedence than its associated commits`,
         linenumber: 1,
         column: 1,
-      }).toString()
+      })
+        .setContext(1, result.subject)
+        .addFixitHint(FixItHint.create({ index: 1, length: result.type?.length ?? 1 }))
     );
   }
 
@@ -84,6 +60,6 @@ export function validatePullRequest(pullrequest: ICommit, commits: IConventional
  * @returns A list of validation results
  * @see https://www.conventionalcommits.org/en/v1.0.0/
  */
-export function validateCommits(commits: ICommit[]): IValidationResult[] {
+export function validateCommits(commits: Commit[]): ConventionalCommit[] {
   return commits.filter(commit => !commit.subject.startsWith("fixup!")).map(commit => validateCommit(commit));
 }

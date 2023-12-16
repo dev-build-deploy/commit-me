@@ -3,20 +3,19 @@
  * SPDX-License-Identifier: MIT
  */
 
+import { Commit, ConventionalCommit } from "@dev-build-deploy/commit-it";
+
 import * as validator from "../src/validator";
 
 describe("Validate commit messages", () => {
   test("Valid commit message", () => {
     const result = validator.validateCommits([
-      {
+      Commit.fromString({
         hash: "0a0b0c0d",
-        subject: "feat: Add new feature",
-        body: "This is a body",
-        footer: {
-          "Acked-by": "Jane Doe",
-        },
-      },
+        message: "feat: Add new feature",
+      }),
     ]);
+
     let count = 0;
     result.forEach(item => (count += item.errors.length));
     expect(count).toBe(0);
@@ -24,15 +23,12 @@ describe("Validate commit messages", () => {
 
   test("Invalid commit message", () => {
     const result = validator.validateCommits([
-      {
+      Commit.fromString({
         hash: "0a0b0c0d",
-        subject: "feat (no noun): Add new feature",
-        body: "This is a body",
-        footer: {
-          "Acked-by": "Jane Doe",
-        },
-      },
+        message: "feat (no noun): Add new feature",
+      }),
     ]);
+
     let count = 0;
     result.forEach(item => (count += item.errors.length));
 
@@ -41,27 +37,41 @@ describe("Validate commit messages", () => {
     expect(count).toBe(2);
   });
 
+  test("Commit messages with warnings", () => {
+    const result = validator.validateCommits([
+      Commit.fromString({
+        hash: "0a0b0c0d",
+        message: `feat: Add new feature
+
+BREAKING CHANGE: this will be ignored and raise a warning...
+
+... as it is followed by a new paragraph`,
+      }),
+    ]);
+
+    let errorCount = 0;
+    let warningCount = 0;
+    result.forEach(item => (errorCount += item.errors.length));
+    result.forEach(item => (warningCount += item.warnings.length));
+    expect(errorCount).toBe(0);
+    expect(warningCount).toBe(1);
+  });
+
   test("Valid Pull Request message", () => {
     const result = validator.validatePullRequest(
-      {
+      Commit.fromString({
         hash: "0a0b0c0d",
-        subject: "feat: Add new feature",
-        body: "This is a body",
-        footer: {
-          "Acked-by": "Jane Doe",
-        },
-      },
+        message: "feat: Add new feature",
+      }),
       [
-        {
+        ConventionalCommit.fromString({
           hash: "0a0b0c0d",
-          type: "feat",
-          description: "Add new feature",
-          subject: "feat: Add new feature",
-          body: "This is a body",
-          footer: {
-            "Acked-by": "Jane Doe",
-          },
-        },
+          message: "feat: Add new feature",
+        }),
+        ConventionalCommit.fromString({
+          hash: "0a0b0c0d",
+          message: "fix: Fixed a bug",
+        }),
       ]
     );
 
@@ -70,25 +80,15 @@ describe("Validate commit messages", () => {
 
   test("Invalid Pull Request message", () => {
     const result = validator.validatePullRequest(
-      {
+      Commit.fromString({
         hash: "0a0b0c0d",
-        subject: "feat (no noun): Add new feature",
-        body: "This is a body",
-        footer: {
-          "Acked-by": "Jane Doe",
-        },
-      },
+        message: "feat (no noun): Add new feature",
+      }),
       [
-        {
+        ConventionalCommit.fromString({
           hash: "0a0b0c0d",
-          type: "feat",
-          description: "Add new feature",
-          subject: "feat: Add new feature",
-          body: "This is a body",
-          footer: {
-            "Acked-by": "Jane Doe",
-          },
-        },
+          message: "feat: Add new feature",
+        }),
       ]
     );
 
@@ -99,25 +99,15 @@ describe("Validate commit messages", () => {
 
   test("Pull Request > Commits", () => {
     const result = validator.validatePullRequest(
-      {
+      Commit.fromString({
         hash: "0a0b0c0d",
-        subject: "feat!: Add new breaking change",
-        body: "This is a body",
-        footer: {
-          "Acked-by": "Jane Doe",
-        },
-      },
+        message: "feat!: Add new breaking change",
+      }),
       [
-        {
+        ConventionalCommit.fromString({
           hash: "0a0b0c0d",
-          type: "feat",
-          description: "Add new feature",
-          subject: "feat: Add new feature",
-          body: "This is a body",
-          footer: {
-            "Acked-by": "Jane Doe",
-          },
-        },
+          message: "feat: Add new feature",
+        }),
       ]
     );
 
@@ -126,25 +116,15 @@ describe("Validate commit messages", () => {
 
   test("Pull Request === Commits", () => {
     const result = validator.validatePullRequest(
-      {
+      Commit.fromString({
         hash: "0a0b0c0d",
-        subject: "feat: Add new breaking change",
-        body: "This is a body",
-        footer: {
-          "Acked-by": "Jane Doe",
-        },
-      },
+        message: "feat: Add new feature",
+      }),
       [
-        {
+        ConventionalCommit.fromString({
           hash: "0a0b0c0d",
-          type: "feat",
-          description: "Add new feature",
-          subject: "feat: Add new feature",
-          body: "This is a body",
-          footer: {
-            "Acked-by": "Jane Doe",
-          },
-        },
+          message: "feat: Add new feature",
+        }),
       ]
     );
 
@@ -153,21 +133,15 @@ describe("Validate commit messages", () => {
 
   test("Pull Request < Commits", () => {
     const result = validator.validatePullRequest(
-      {
+      Commit.fromString({
         hash: "0a0b0c0d",
-        subject: "chore: Add new breaking change",
-      },
+        message: "chore: Add new breaking change",
+      }),
       [
-        {
+        ConventionalCommit.fromString({
           hash: "0a0b0c0d",
-          type: "feat",
-          description: "Add new feature",
-          subject: "feat: Add new feature",
-          body: "This is a body",
-          footer: {
-            "Acked-by": "Jane Doe",
-          },
-        },
+          message: "feat: Add new feature",
+        }),
       ]
     );
 
