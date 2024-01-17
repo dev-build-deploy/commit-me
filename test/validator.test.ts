@@ -233,3 +233,23 @@ describe("Validate valid Pull Request vs Commits", () => {
     }
   });
 });
+
+describe("Ignore fixup and merge commits", () => {
+  const testData = [
+    "fixup! feat: add new feature",
+    "fixup! fixup! feat: add new feature",
+    "Merge pull request #123 from some-branch/feature/branch",
+    "Merge pull request #123 from 'some-branch/feature/branch'",
+    "Merged in ci/some-branch (pull request #123)",
+    "Merged in 'ci/some-branch' (pull request #123)",
+    "Merge branch 'ci/some-branch' into 'main'",
+    "Merge branch 'ci/some-branch' into main",
+    "Merge branch ci/some-branch into main",
+  ];
+
+  it.each(testData)("$test", test => {
+    const result = validator.validateCommits([Commit.fromString({ hash: "0a0b0c0d", message: test })]);
+
+    expect(result.length).toBe(0);
+  });
+});
