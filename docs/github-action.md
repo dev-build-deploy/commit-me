@@ -46,6 +46,9 @@ jobs:
   commit-me:
     name: Conventional Commits Compliance
     runs-on: ubuntu-latest
+    env:
+      # Enable colored output in GitHub Actions
+      FORCE_COLOR: 3
     steps:
       - uses: dev-build-deploy/commit-me@v0
         with:
@@ -77,6 +80,9 @@ jobs:
   commit-me:
     name: Conventional Commits Compliance
     runs-on: ubuntu-latest
+    env:
+      # Enable colored output in GitHub Actions
+      FORCE_COLOR: 3
     steps:
       - uses: dev-build-deploy/commit-me@v0
         with:
