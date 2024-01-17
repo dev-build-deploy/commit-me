@@ -59,19 +59,10 @@ BREAKING CHANGE: this will be ignored and raise a warning...
 
   test("Valid Pull Request message", () => {
     const result = validator.validatePullRequest(
-      Commit.fromString({
-        hash: "0a0b0c0d",
-        message: "feat: Add new feature",
-      }),
+      Commit.fromString({ hash: "0a0b0c0d", message: "feat: Add new feature" }),
       [
-        ConventionalCommit.fromString({
-          hash: "0a0b0c0d",
-          message: "feat: Add new feature",
-        }),
-        ConventionalCommit.fromString({
-          hash: "0a0b0c0d",
-          message: "fix: Fixed a bug",
-        }),
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "feat: Add new feature" }),
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "fix: Fixed a bug" }),
       ]
     );
 
@@ -96,56 +87,103 @@ BREAKING CHANGE: this will be ignored and raise a warning...
     // Scope is not a noun
     expect(result.errors.length).toBe(2);
   });
+});
 
-  test("Pull Request > Commits", () => {
-    const result = validator.validatePullRequest(
-      Commit.fromString({
+describe("Validate Pull Request version bump", () => {
+  const testData = [
+    {
+      description: "Pull Request < Commit",
+      pullRequest: Commit.fromString({ hash: "0a0b0c0d", message: "chore: silly change" }),
+      commits: [ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "feat: add new feature" })],
+      error: true,
+    },
+    {
+      description: "Pull Request < Commits",
+      pullRequest: Commit.fromString({ hash: "0a0b0c0d", message: "chore: silly change" }),
+      commits: [
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore: silly change" }),
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "feat: add new feature" }),
+      ],
+      error: true,
+    },
+    {
+      description: "Pull Request === Commits",
+      pullRequest: Commit.fromString({ hash: "0a0b0c0d", message: "chore!: silly change" }),
+      commits: [
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore: silly change" }),
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "feat!: add new feature" }),
+      ],
+      error: false,
+    },
+    {
+      description: "Pull Request === Commits",
+      pullRequest: Commit.fromString({ hash: "0a0b0c0d", message: "feat: add a new feature" }),
+      commits: [
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore: silly change" }),
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "feat: add new feature" }),
+      ],
+      error: false,
+    },
+    {
+      description: "Pull Request === Commits",
+      pullRequest: Commit.fromString({
         hash: "0a0b0c0d",
-        message: "feat!: Add new breaking change",
+        message: "feat: add a new feature\n\nBREAKING-CHANGE: This is breaking",
       }),
-      [
+      commits: [
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore: silly change" }),
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "feat!: add new feature" }),
+      ],
+      error: false,
+    },
+    {
+      description: "Pull Request === Commits",
+      pullRequest: Commit.fromString({
+        hash: "0a0b0c0d",
+        message: "feat: add a new feature\n\nBREAKING-CHANGE: This is breaking",
+      }),
+      commits: [
         ConventionalCommit.fromString({
           hash: "0a0b0c0d",
-          message: "feat: Add new feature",
+          message: "chore: silly change\n\nBREAKING CHANGE: This is breaking?",
         }),
-      ]
-    );
-
-    expect(result.errors.length).toBe(0);
-  });
-
-  test("Pull Request === Commits", () => {
-    const result = validator.validatePullRequest(
-      Commit.fromString({
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "feat: add new feature" }),
+      ],
+      error: false,
+    },
+    {
+      description: "Pull Request > Commits",
+      pullRequest: Commit.fromString({
         hash: "0a0b0c0d",
-        message: "feat: Add new feature",
+        message: "fix: add fix\n\nBREAKING-CHANGE: This is breaking",
       }),
-      [
-        ConventionalCommit.fromString({
-          hash: "0a0b0c0d",
-          message: "feat: Add new feature",
-        }),
-      ]
-    );
+      commits: [
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore: silly change" }),
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "fix: fixed a bug" }),
+      ],
+      error: false,
+    },
+    {
+      description: "Pull Request > Commits",
+      pullRequest: Commit.fromString({ hash: "0a0b0c0d", message: "feat: add a new feature" }),
+      commits: [
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore: silly change" }),
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "fix: fixed a bug" }),
+      ],
+      error: false,
+    },
+  ];
 
-    expect(result.errors.length).toBe(0);
-  });
+  it.each(testData)("$test.description", test => {
+    const result = validator.validatePullRequest(test.pullRequest, test.commits);
 
-  test("Pull Request < Commits", () => {
-    const result = validator.validatePullRequest(
-      Commit.fromString({
-        hash: "0a0b0c0d",
-        message: "chore: Add new breaking change",
-      }),
-      [
-        ConventionalCommit.fromString({
-          hash: "0a0b0c0d",
-          message: "feat: Add new feature",
-        }),
-      ]
-    );
-
-    // Pull Request < Commits
-    expect(result.errors.length).toBe(1);
+    if (test.error) {
+      expect(result.errors.length).toBe(1);
+      expect(result.errors[0].message.text).toBe(
+        "A Pull Request MUST correlate with a Semantic Versioning identifier (`MAJOR`, `MINOR`, or `PATCH`) with the same or higher precedence than its associated commits"
+      );
+    } else {
+      expect(result.errors.length).toBe(0);
+    }
   });
 });

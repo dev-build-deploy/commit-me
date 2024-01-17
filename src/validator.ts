@@ -42,7 +42,7 @@ export function validatePullRequest(pullrequest: Commit, commits: ConventionalCo
   if (pullRequestValue < commitsValue) {
     result.errors.push(
       DiagnosticsMessage.createError(result.hash, {
-        text: `A Pull Request title MUST correlate with a Semantic Versioning identifier (\`MAJOR\`, \`MINOR\`, or \`PATCH\`) with the same or higher precedence than its associated commits`,
+        text: `A Pull Request MUST correlate with a Semantic Versioning identifier (\`MAJOR\`, \`MINOR\`, or \`PATCH\`) with the same or higher precedence than its associated commits`,
         linenumber: 1,
         column: 1,
       })

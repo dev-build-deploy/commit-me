@@ -10,9 +10,8 @@ import * as github from "@actions/github";
 import { Commit, ConventionalCommit } from "@dev-build-deploy/commit-it";
 
 import { Configuration } from "../configuration";
-import { GitHubSource, IDataSource } from "../datasources";
+import { GitHubSource } from "../datasources";
 import { updatePullRequestLabels } from "../github";
-import * as repository from "../repository";
 import { validateCommits, validatePullRequest } from "../validator";
 
 /**
@@ -55,31 +54,17 @@ const reportErrorMessages = (results: ConventionalCommit[]): { errors: number; w
   return { errors: errorCount, warnings: warningCount };
 };
 
-const setConfiguration = async (dataSource: IDataSource): Promise<void> => {
-  assert(github.context.payload.pull_request);
-
-  const pullrequestOnly = core.getInput("include-commits")
-    ? !core.getBooleanInput("include-commits")
-    : github.context.payload.pull_request.base.repo.allow_rebase_merge === false;
-
-  // Set the global configuration
-  const config = await Configuration.getInstance().fromDatasource(dataSource, core.getInput("config") || undefined);
-  config.includeCommits = !pullrequestOnly;
-  config.addScopes(core.getMultilineInput("scopes") ?? []);
-  config.addTypes(core.getMultilineInput("types") ?? []);
-};
-
 /**
  * Main entry point for the GitHub Action.
  */
 async function run(): Promise<void> {
   try {
     core.info("📄 CommitMe - Conventional Commit compliance validation");
-    const datasource = new GitHubSource();
-    await setConfiguration(datasource);
 
     core.startGroup("📝 Checking repository configuration");
-    const config = Configuration.getInstance();
+    const datasource = new GitHubSource();
+    const config = await Configuration.getInstance().fromDatasource(datasource, core.getInput("config") || undefined);
+
     const githubToken = core.getInput("token") ?? undefined;
 
     assert(github.context.payload.pull_request);
@@ -94,14 +79,20 @@ async function run(): Promise<void> {
       return;
     }
 
-    if (core.getInput("include-commits") === undefined) {
-      repository.checkConfiguration(github.context.payload.pull_request.base.repo);
+    if (config.includeCommits === true) {
+      if (config.includePullRequest === true) {
+        core.info("ℹ️ Validating both Pull Request and all associated commits.");
+      } else {
+        core.info("ℹ️ Only validating the commits associated with the Pull Request.");
+      }
     } else {
-      core.info(
-        config.includeCommits === true
-          ? "ℹ️ Validating both Pull Request title and all associated commits."
-          : "ℹ️ Only validating the Pull Request title."
-      );
+      if (config.includePullRequest === true) {
+        core.info("ℹ️ Only validating the Pull Request.");
+      } else {
+        core.setFailed(
+          "❌ The current configuration of CommitMe does not validate either Pull Request or the associated commits."
+        );
+      }
     }
 
     // Setting up the environment
@@ -151,7 +142,7 @@ async function run(): Promise<void> {
     // Updating the pull request label
     if (githubToken === undefined) {
       core.warning("⚠️ The token input is required to update the pull request label.");
-    } else if (core.getBooleanInput("update-labels") === true) {
+    } else if (config.updatePullRequestLabels === true) {
       const label = await determineLabel(allResults);
       if (label !== undefined) await updatePullRequestLabels(label);
     }

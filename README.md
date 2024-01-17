@@ -20,23 +20,9 @@ Please refer to the document related to your environment for more details on the
 - [Command Line Interface](./docs/cli.md)
 - [Pre-commit Hook](./docs/pre-commit.md)
 
-## Configuration file
+## Configuration
 
-You can create a global configuration file:
-
-```json
-{
-  "types": [ "build", "chore", "ci", "docs", "style", "refactor", "perf", "test" ],
-  "scopes": [ "server", "client" ]
-}
-```
-
-| Configuration Item | Description |
-| -------------------| ------------|
-| `types`            | Conventional Commit types to allow. By default it always supports `feat` and `fix`. |
-| `scopes`           | Conventional Commit scopes to allow. No restrictions will be applied when not specified. |
-
-> :bulb: By default, CommitMe will attempt to load `.commit-me.json` in the root of your repository
+Please refer to the [Global Configuration documentation](./docs/config.md) for details on how to configure `CommitMe`.
 
 ## Contributing
 

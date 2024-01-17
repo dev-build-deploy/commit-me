@@ -12,8 +12,8 @@ You can scan your [pull requests](#pull-request-scanning) for determining compli
 ## Validation strategies
 
 Currently there are two distinct [Conventional Commits] validation strategies implemented;
-- Validate the Pull Request title and all associated commits _(default behavior)_.
-- **ONLY** validate the Pull Request title.
+- Validate the Pull Request and all associated commits _(default behavior)_.
+- **ONLY** validate the Pull Request.
 
 Selection of the strategy is based on either:
 - The allowed merge strategies in your repository (the `contents: write` permission needs to be set in order for this detection to work.)
@@ -95,7 +95,7 @@ You can limit the Conventional Commit Type and/or Scope using the related input 
 - uses: dev-build-deploy/commit-me@v0
   with:
     # OPTIONAL; Enforce that each commit contains a predefined scope
-    scope: |
+    scopes: |
       backend
       frontend
     # OPTIONAL; Limit the Conventional Commits type to `feat`, `fix`, and a custom entries `docs` and `debt`
@@ -112,8 +112,8 @@ We recommend using the [`pull_request`](https://docs.github.com/en/actions/using
 In addition, we recommend the following activity types: 
 | Activity | Description |
 | --- | --- |
-| `opened` | Validates all commits in the source branch of your Pull Request upon opening the PR |
-| `edited` | Validates any change to the Pull Requests title |
+| `opened` | Validvates all commits in the source branch of your Pull Request upon opening the PR |
+| `edited` | Validates any change to the Pull Requests |
 | `synchronize` | Validate all subsequent commits added to the (open) Pull Request. This is only required in case rebase merges are enabled on the target repository. |
 
 > **NOTE**: Although supported, the trigger `pull_request_target` has elevated permissions to access secrets and your repository. Please refer to this [GitHub security blog post](https://securitylab.github.com/research/github-actions-preventing-pwn-requests/) for more details 
@@ -124,8 +124,13 @@ In addition, we recommend the following activity types:
 | --- | --- | --- |
 | `token` | *NO* | GitHub token needed to access your commits in your pull request. This is **only** required in case you want to:<br><ul><li>Validate commits associated with your Pull Request</li><li>Update labels in your Pull Request</li></ul> |
 | `update-labels` | *NO* | Allow CommitMe to manage [labels](#pull-request-labels) based on the [Conventional Commits] metadata (requires `pull-requests:write` permission), defaults to `true` |
-| `include-commits` | *NO* | Include commits associated with the Pull Request; by default we use the repository configuration settings to determine this value (requires `contents:write` permission if **NOT** set). |
+| `scopes` | *NO* | Conventional Commit scopes to allow. No restrictions will be applied when not specified. |
+| `types` | *NO* | Conventional Commit types to allow. By default it always supports `feat` and `fix`. |
+| `include-commits` | *NO* | Include commits associated with the Pull Request during validation; by default we use the repository configuration settings to determine this value (requires `contents:write` permission if **NOT** set). |
 | `config` | *NO* | Path to the configuration file; by default `.pre-commit.json` is used. |
+
+> [!NOTE]
+> You can also configure the majority of the inputs using the [Global Configuration file](./config.md#github-actions-settings)
 
 ### Permissions
 
