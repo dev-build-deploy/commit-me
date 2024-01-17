@@ -89,7 +89,47 @@ BREAKING CHANGE: this will be ignored and raise a warning...
   });
 });
 
-describe("Validate Pull Request version bump", () => {
+describe("Validate invalid Pull Request vs Commits", () => {
+  const testData = [
+    {
+      description: "Invalid Pull Request",
+      pullRequest: Commit.fromString({ hash: "0a0b0c0d", message: "feat (no noun): Add new feature" }),
+      commits: [
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore: silly change" }),
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "feat: add new feature" }),
+      ],
+      errorCount: 2,
+    },
+    {
+      description: "Valid and Invalid Commits",
+      pullRequest: Commit.fromString({ hash: "0a0b0c0d", message: "feat: Add new feature" }),
+      commits: [
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore: silly change" }),
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "feat (no noun)!: silly change" }),
+      ],
+      errorCount: 0,
+    },
+    {
+      description: "Only Invalid Commits",
+      pullRequest: Commit.fromString({ hash: "0a0b0c0d", message: "feat: Add new feature" }),
+      commits: [ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "feat (no noun)!: silly change" })],
+      errorCount: 0,
+    },
+    {
+      description: "No Commits",
+      pullRequest: Commit.fromString({ hash: "0a0b0c0d", message: "feat: Add new feature" }),
+      commits: [],
+      errorCount: 0,
+    },
+  ];
+
+  it.each(testData)("$test.description", test => {
+    const result = validator.validatePullRequest(test.pullRequest, test.commits);
+    expect(result.errors.length).toBe(test.errorCount);
+  });
+});
+
+describe("Validate valid Pull Request vs Commits", () => {
   const testData = [
     {
       description: "Pull Request < Commit",
@@ -107,7 +147,7 @@ describe("Validate Pull Request version bump", () => {
       error: true,
     },
     {
-      description: "Pull Request === Commits",
+      description: "Breaking Pull Request === Breaking Commits",
       pullRequest: Commit.fromString({ hash: "0a0b0c0d", message: "chore!: silly change" }),
       commits: [
         ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore: silly change" }),
@@ -116,16 +156,22 @@ describe("Validate Pull Request version bump", () => {
       error: false,
     },
     {
-      description: "Pull Request === Commits",
+      description: "Pull Request === Invalid Commits",
       pullRequest: Commit.fromString({ hash: "0a0b0c0d", message: "feat: add a new feature" }),
       commits: [
-        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore: silly change" }),
-        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "feat: add new feature" }),
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore (no noun): silly change" }),
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "add new feature" }),
       ],
       error: false,
     },
     {
-      description: "Pull Request === Commits",
+      description: "Pull Request === No Commits",
+      pullRequest: Commit.fromString({ hash: "0a0b0c0d", message: "feat: add a new feature" }),
+      commits: [],
+      error: false,
+    },
+    {
+      description: "Pull Request (BREAKING CHANGE) === Breaking Commits",
       pullRequest: Commit.fromString({
         hash: "0a0b0c0d",
         message: "feat: add a new feature\n\nBREAKING-CHANGE: This is breaking",
@@ -137,7 +183,7 @@ describe("Validate Pull Request version bump", () => {
       error: false,
     },
     {
-      description: "Pull Request === Commits",
+      description: "Pull Request (BREAKING CHANGE) === Commits (BREAKING CHANGE)",
       pullRequest: Commit.fromString({
         hash: "0a0b0c0d",
         message: "feat: add a new feature\n\nBREAKING-CHANGE: This is breaking",
@@ -152,7 +198,7 @@ describe("Validate Pull Request version bump", () => {
       error: false,
     },
     {
-      description: "Pull Request > Commits",
+      description: "Pull Request (BREAKING CHANGE) > Commits",
       pullRequest: Commit.fromString({
         hash: "0a0b0c0d",
         message: "fix: add fix\n\nBREAKING-CHANGE: This is breaking",
