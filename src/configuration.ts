@@ -2,10 +2,14 @@
  * SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
  * SPDX-License-Identifier: MIT
  */
+import assert from "assert";
 
+import * as core from "@actions/core";
+import * as github from "@actions/github";
 import { IConventionalCommitOptions } from "@dev-build-deploy/commit-it";
 
 import { FileSource, GitHubSource, GitSource, IDataSource } from "./datasources";
+import * as repository from "./repository";
 
 /**
  * Configuration class
@@ -20,6 +24,7 @@ class Configuration implements IConventionalCommitOptions {
 
   includeCommits = false;
   includePullRequest = false;
+  updatePullRequestLabels = false;
   scopes?: string[];
   types?: string[];
 
@@ -59,22 +64,50 @@ class Configuration implements IConventionalCommitOptions {
    */
   async fromDatasource(datasource: IDataSource, configPath?: string): Promise<this> {
     const content = await datasource.getConfigurationFile(configPath ?? ".commit-me.json");
-    if (!content) return this;
+    const config = content ? JSON.parse(content) : {};
 
     if (datasource instanceof GitSource || datasource instanceof FileSource) {
       this.includeCommits = true;
       this.includePullRequest = false;
+      this.updatePullRequestLabels = false;
+
+      this.addScopes(config.scopes ?? []);
+      this.addTypes(config.types ?? []);
     } else if (datasource instanceof GitHubSource) {
-      this.includePullRequest = true;
+      const hasIncludeCommitsInput = core.getInput("include-commits") !== "";
+      const hasPullRequestLabelsInput = core.getInput("update-labels") !== "";
+
+      const autoDetectIncludeCommits = !hasIncludeCommitsInput && config.githubAction?.includeCommits === undefined;
+
+      if (autoDetectIncludeCommits) {
+        assert(github.context.payload.pull_request);
+        repository.checkConfiguration(github.context.payload.pull_request.base.repo);
+        this.includeCommits = github.context.payload.pull_request.base.repo.allow_rebase_merge === true;
+      } else {
+        this.includeCommits = hasIncludeCommitsInput
+          ? core.getBooleanInput("include-commits")
+          : config.githubAction?.includeCommits ?? false;
+      }
+      this.includePullRequest = config.githubAction?.includePullRequest ?? true;
+
+      if (core.getMultilineInput("scopes").length > 0) {
+        this.addScopes(core.getMultilineInput("scopes"));
+      } else {
+        this.addScopes(config.scopes ?? []);
+      }
+
+      if (core.getMultilineInput("types").length > 0) {
+        this.addTypes(core.getMultilineInput("types"));
+      } else {
+        this.addTypes(config.types ?? []);
+      }
+
+      this.updatePullRequestLabels = hasPullRequestLabelsInput
+        ? core.getBooleanInput("update-labels")
+        : config.githubAction?.updatePullRequestLabels ?? false;
     } else {
       throw new Error("Unsupported data source");
     }
-
-    const config = JSON.parse(content);
-    this.includeCommits = config.includeCommits ?? this.includeCommits;
-    this.includePullRequest = config.includePullRequest ?? this.includePullRequest;
-    this.addScopes(config.scopes ?? []);
-    this.addTypes(config.types ?? []);
 
     return this;
   }
