@@ -110,7 +110,7 @@ async function run(): Promise<void> {
       core.startGroup(`🔎 Scanning Pull Request`);
       const resultPullrequest = validatePullRequest(
         Commit.fromString({
-          hash: `#${github.context.payload.pull_request.number}`,
+          hash: `PullRequest`,
           message: [github.context.payload.pull_request.title, "", github.context.payload.pull_request.body].join("\n"),
         }),
         allResults
