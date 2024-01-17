@@ -24,7 +24,7 @@ jobs:
     name: Conventional Commits Compliance
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Run CommitMe
         uses: ./
         with:
