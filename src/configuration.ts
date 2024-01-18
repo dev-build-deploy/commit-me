@@ -75,9 +75,11 @@ class Configuration implements IConventionalCommitOptions {
       this.addTypes(config.types ?? []);
     } else if (datasource instanceof GitHubSource) {
       const hasIncludeCommitsInput = core.getInput("include-commits") !== "";
+      const hasIncludePullRequestInput = core.getInput("include-pull-request") !== "";
       const hasPullRequestLabelsInput = core.getInput("update-labels") !== "";
 
       const autoDetectIncludeCommits = !hasIncludeCommitsInput && config.githubAction?.includeCommits === undefined;
+      const autoDetectIncludePR = !hasIncludePullRequestInput && config.githubAction?.includePullRequest === undefined;
 
       if (autoDetectIncludeCommits) {
         assert(github.context.payload.pull_request);
@@ -88,7 +90,15 @@ class Configuration implements IConventionalCommitOptions {
           ? core.getBooleanInput("include-commits")
           : config.githubAction?.includeCommits ?? false;
       }
-      this.includePullRequest = config.githubAction?.includePullRequest ?? true;
+
+      if (autoDetectIncludePR) {
+        assert(github.context.payload.pull_request);
+        this.includePullRequest = github.context.payload.pull_request.base.repo.allow_rebase_merge === true;
+      } else {
+        this.includePullRequest = hasIncludePullRequestInput
+          ? core.getBooleanInput("include-pull-request")
+          : config.githubAction?.includePullRequest ?? true;
+      }
 
       if (core.getMultilineInput("scopes").length > 0) {
         this.addScopes(core.getMultilineInput("scopes"));
