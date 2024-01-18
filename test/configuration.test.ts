@@ -115,6 +115,7 @@ describe("GitHubSource", () => {
     await config.fromDatasource(new GitHubSource());
 
     expect(config.includeCommits).toBe(true);
+    expect(config.includePullRequest).toBe(true);
   });
 
   test("Auto Detect: disallow rebase merge", async () => {
@@ -132,6 +133,7 @@ describe("GitHubSource", () => {
     await config.fromDatasource(new GitHubSource());
 
     expect(config.includeCommits).toBe(false);
+    expect(config.includePullRequest).toBe(false);
   });
 
   test("Configuration file only", async () => {
@@ -172,12 +174,14 @@ describe("GitHubSource", () => {
   test("Inputs only", async () => {
     jest.spyOn(core, "getInput").mockImplementation((name: string) => {
       if (name === "include-commits") return "true";
+      if (name === "include-pull-request") return "true";
       if (name === "update-labels") return "true";
       return "";
     });
 
     jest.spyOn(core, "getBooleanInput").mockImplementation((name: string) => {
       if (name === "include-commits") return true;
+      if (name === "include-pull-request") return true;
       if (name === "update-labels") return true;
       return false;
     });
@@ -191,7 +195,7 @@ describe("GitHubSource", () => {
     // Set the payload
     github.context.payload.pull_request = {
       number: 1,
-      base: { repo: { allow_merge_commit: true, allow_squash_merge: true, allow_rebase_merge: false } },
+      base: { repo: { allow_merge_commit: false, allow_squash_merge: false, allow_rebase_merge: false } },
     };
 
     const config = new Configuration();
@@ -210,12 +214,14 @@ describe("GitHubSource", () => {
   test("Inputs and Configuration", async () => {
     jest.spyOn(core, "getInput").mockImplementation((name: string) => {
       if (name === "include-commits") return "false";
+      if (name === "include-pull-request") return "false";
       if (name === "update-labels") return "false";
       return "";
     });
 
     jest.spyOn(core, "getBooleanInput").mockImplementation((name: string) => {
       if (name === "include-commits") return false;
+      if (name === "include-pull-request") return false;
       if (name === "update-labels") return false;
       return false;
     });
@@ -240,7 +246,7 @@ describe("GitHubSource", () => {
     // Set the payload
     github.context.payload.pull_request = {
       number: 1,
-      base: { repo: { allow_merge_commit: true, allow_squash_merge: true, allow_rebase_merge: false } },
+      base: { repo: { allow_merge_commit: true, allow_squash_merge: true, allow_rebase_merge: true } },
     };
 
     const config = new Configuration();
@@ -248,7 +254,7 @@ describe("GitHubSource", () => {
 
     // GitHub Actions configuration items
     expect(config.includeCommits).toBe(false);
-    expect(config.includePullRequest).toBe(true);
+    expect(config.includePullRequest).toBe(false);
     expect(config.updatePullRequestLabels).toBe(false);
 
     // Generic configuration items

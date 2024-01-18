@@ -24,6 +24,10 @@ inputs:
     description: 'Include commits associated with the Pull Request; by default we use the repository configuration settings to determine this value.'
     required: false
   
+  include-pull-request:
+    description: 'Include the Pull Request title and description; by default we use the repository configuration settings to determine this value.'
+    required: false
+
   scopes:
     description: 'Conventional Commits scopes allowed for this repository; be default we accept all scopes.'
     required: false

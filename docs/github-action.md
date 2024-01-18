@@ -11,13 +11,44 @@ You can scan your [pull requests](#pull-request-scanning) for determining compli
 
 ## Validation strategies
 
-Currently there are two distinct [Conventional Commits] validation strategies implemented;
-- Validate the Pull Request and all associated commits _(default behavior)_.
-- **ONLY** validate the Pull Request.
+By default, `CommitMe` will attempt to attempt to _automatically detect_ the validation strategy based on you repository merge strategies;
+- Pull Requests will be validated in case `Allow rebase merging` is enabled
+- Commits associated with your Pull Request with be validated in case either `Allow squash merging` or `Allow rebase merging` is enabled.
 
-Selection of the strategy is based on either:
-- The allowed merge strategies in your repository (the `contents: write` permission needs to be set in order for this detection to work.)
-- Manually configuring the `include-commits` input parameter
+| Validation of / Merge Strategy           | Rebase Merge       | Squash Merge       | Merge Commit       |
+| ---------------------------------------- | ------------------ | ------------------ | ------------------ |
+| Pull Request                             | :x:                | :white_check_mark: | :white_check_mark: |
+| Commits associated with the Pull Request | :white_check_mark: | :x:                | :x:                |
+| Pull Request *and* associated commits    | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+
+> [!WARNING]
+> The `contents: write` permission needs to be set in order for this automatic detection to work.
+
+Alternatively, you can *manually* specify the strategy by setting the associated [GitHub Action Inputs](#inputs) or [Global Configuration file parameters](./config.md#github-actions-settings).
+
+> [!NOTE]
+> We strongly recommend using the above table to configure your project.**
+
+### Allow squash merging
+
+In order for `CommitMe` to operate most effectively, we **recommend** configuring the "default commit message";
+
+| Value | Recommended | Comment |
+| ----- | ----------- | ------- |
+| `Default Message` | :x: | GitHub will create a commit message in your target branch which will **not** be compliant with [Conventional Commits]. |
+| `Pull request title` | :warning: | Although this provides support for parsing the [Conventional Commits]-subjects, it will not provide the ability to use the `BREAKING[-]CHANGE` footer elements |
+| `Pull request title and commit details` | :warning: | Although this provides support for parsing the [Conventional Commits]-subjects, it will not provide the ability to use the `BREAKING[-]CHANGE` footer elements |
+| `Pull request title and description` | :white_check_mark: | Provides full [Conventional Commit] support on the Pull Request description and body, providing support for `BREAKING[-]CHANGE` footer elements in the Pull Request description. |
+
+### Allow merge commits
+
+In order for `CommitMe` to operate most effectively, we **recommend** configuring the "default commit message";
+
+| Value | Recommended | Comment |
+| ----- | ----------- | ------- |
+| `Default Message` | :x: | GitHub will create a commit message in your target branch which will **not** be compliant with [Conventional Commits]. |
+| `Pull request title` | :warning: | Although this provides support for parsing the [Conventional Commits]-subjects, it will not provide the ability to use the `BREAKING[-]CHANGE` footer elements |
+| `Pull request title and description` | :white_check_mark: | Provides full [Conventional Commit] support on the Pull Request description and body, providing support for `BREAKING[-]CHANGE` footer elements in the Pull Request description. |
 
 ## Workflows
 
@@ -133,10 +164,11 @@ In addition, we recommend the following activity types:
 | `scopes` | *NO* | Conventional Commit scopes to allow. No restrictions will be applied when not specified. |
 | `types` | *NO* | Conventional Commit types to allow. By default it always supports `feat` and `fix`. |
 | `include-commits` | *NO* | Include commits associated with the Pull Request during validation; by default we use the repository configuration settings to determine this value (requires `contents:write` permission if **NOT** set). |
+| `include-pull-request` | *NO* | Include the Pull Request title and description; by default we use the repository configuration settings to determine this value. |
 | `config` | *NO* | Path to the configuration file; by default `.pre-commit.json` is used. |
 
 > [!NOTE]
-> You can also configure the majority of the inputs using the [Global Configuration file](./config.md#github-actions-settings)
+> We recommend to configure `CommitMe` using the [Global Configuration file](./config.md#github-actions-settings)
 
 ### Permissions
 
