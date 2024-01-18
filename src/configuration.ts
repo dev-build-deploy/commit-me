@@ -84,7 +84,9 @@ class Configuration implements IConventionalCommitOptions {
       if (autoDetectIncludeCommits) {
         assert(github.context.payload.pull_request);
         repository.checkConfiguration(github.context.payload.pull_request.base.repo);
-        this.includeCommits = github.context.payload.pull_request.base.repo.allow_rebase_merge === true;
+        this.includeCommits =
+          github.context.payload.pull_request.base.repo.allow_rebase_merge === true ||
+          github.context.payload.pull_request.base.repo.allow_squash_merge === true;
       } else {
         this.includeCommits = hasIncludeCommitsInput
           ? core.getBooleanInput("include-commits")
