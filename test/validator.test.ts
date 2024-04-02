@@ -143,6 +143,7 @@ describe("Validate valid Pull Request vs Commits", () => {
       commits: [
         ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore: silly change" }),
         ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "feat: add new feature" }),
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore(deps-dev): update dependencies" }),
       ],
       error: true,
     },
@@ -152,6 +153,7 @@ describe("Validate valid Pull Request vs Commits", () => {
       commits: [
         ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore: silly change" }),
         ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "feat!: add new feature" }),
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore(deps-dev): update dependencies" }),
       ],
       error: false,
     },
@@ -179,6 +181,7 @@ describe("Validate valid Pull Request vs Commits", () => {
       commits: [
         ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore: silly change" }),
         ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "feat!: add new feature" }),
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore(deps-dev): update dependencies" }),
       ],
       error: false,
     },
@@ -206,6 +209,7 @@ describe("Validate valid Pull Request vs Commits", () => {
       commits: [
         ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore: silly change" }),
         ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "fix: fixed a bug" }),
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore(deps-dev): update dependencies" }),
       ],
       error: false,
     },
@@ -215,6 +219,7 @@ describe("Validate valid Pull Request vs Commits", () => {
       commits: [
         ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore: silly change" }),
         ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "fix: fixed a bug" }),
+        ConventionalCommit.fromString({ hash: "0a0b0c0d", message: "chore(deps-dev): update dependencies" }),
       ],
       error: false,
     },
