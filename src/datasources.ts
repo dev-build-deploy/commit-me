@@ -8,6 +8,7 @@ import * as fs from "fs";
 
 import * as core from "@actions/core";
 import * as github from "@actions/github";
+import { RequestError } from "@octokit/request-error";
 import { Commit } from "@dev-build-deploy/commit-it";
 import { simpleGit } from "simple-git";
 
@@ -110,10 +111,13 @@ export class GitHubSource implements IDataSource {
 
       return Buffer.from(config.content, "base64").toString();
     } catch (error: unknown) {
-      if ((error as Error).message !== "Not Found") {
-        throw error;
+      if (error instanceof RequestError && error.response) {
+        const reponseData = error.response.data as Record<string, unknown>
+        if ("message" in reponseData && reponseData.message === "Not Found") {
+          return undefined;
+        }
       }
-      return undefined;
+      throw error;
     }
   }
 }
