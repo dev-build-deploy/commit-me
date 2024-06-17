@@ -112,7 +112,7 @@ export class GitHubSource implements IDataSource {
       return Buffer.from(config.content, "base64").toString();
     } catch (error: unknown) {
       if (error instanceof RequestError && error.response) {
-        const reponseData = error.response.data as Record<string, unknown>
+        const reponseData = error.response.data as Record<string, unknown>;
         if ("message" in reponseData && reponseData.message === "Not Found") {
           return undefined;
         }
