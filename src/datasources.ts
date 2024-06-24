@@ -8,8 +8,8 @@ import * as fs from "fs";
 
 import * as core from "@actions/core";
 import * as github from "@actions/github";
-import { RequestError } from "@octokit/request-error";
 import { Commit } from "@dev-build-deploy/commit-it";
+import { RequestError } from "@octokit/request-error";
 import { simpleGit } from "simple-git";
 
 /** DataSource abstraction interface
