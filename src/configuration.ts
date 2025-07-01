@@ -86,7 +86,7 @@ class Configuration implements IConventionalCommitOptions {
       } else {
         this.includeCommits = hasIncludeCommitsInput
           ? core.getBooleanInput("include-commits")
-          : config.githubAction?.includeCommits ?? false;
+          : (config.githubAction?.includeCommits ?? false);
       }
       this.includePullRequest = config.githubAction?.includePullRequest ?? true;
 
@@ -104,7 +104,7 @@ class Configuration implements IConventionalCommitOptions {
 
       this.updatePullRequestLabels = hasPullRequestLabelsInput
         ? core.getBooleanInput("update-labels")
-        : config.githubAction?.updatePullRequestLabels ?? false;
+        : (config.githubAction?.updatePullRequestLabels ?? false);
     } else {
       throw new Error("Unsupported data source");
     }
