@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@actions/core": "^1",
-    "@actions/github": "^6",
+    "@actions/github": "^7",
     "@dev-build-deploy/commit-it": "^2",
     "@dev-build-deploy/diagnose-it": "^1",
     "commander": "^12",
