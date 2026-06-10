@@ -37,7 +37,7 @@ jobs:
     steps:
       - name: Run ReleaseMe
         id: release
-        uses: dev-build-deploy/release-me@v0
+        uses: dev-build-deploy/release-me@v1
         with:
           token: ${{ github.token }}
           prefix: v
