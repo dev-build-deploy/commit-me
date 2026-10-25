@@ -8,8 +8,8 @@ import * as core from "@actions/core";
 import * as github from "@actions/github";
 import { IConventionalCommitOptions } from "@dev-build-deploy/commit-it";
 
-import { FileSource, GitHubSource, GitSource, IDataSource } from "./datasources";
-import * as repository from "./repository";
+import { FileSource, GitHubSource, GitSource, IDataSource } from "./datasources.js";
+import * as repository from "./repository.js";
 
 /**
  * Configuration class

@@ -5,7 +5,7 @@
 
 import { Commit, ConventionalCommit } from "@dev-build-deploy/commit-it";
 
-import * as validator from "../src/validator";
+import * as validator from "../src/validator.js";
 
 describe("Validate commit messages", () => {
   test("Valid commit message", () => {

@@ -9,9 +9,9 @@ import os from "os";
 
 import { Command } from "commander";
 
-import { Configuration } from "../configuration";
-import { GitSource } from "../datasources";
-import { validateCommits } from "../validator";
+import { Configuration } from "../configuration.js";
+import { GitSource } from "../datasources.js";
+import { validateCommits } from "../validator.js";
 
 const program = new Command();
 
