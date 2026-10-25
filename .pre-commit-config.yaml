@@ -45,3 +45,10 @@ repos:
     language: system
     files: ^\.github/(dependabot\.yml|\.commit-me\.json)$
     pass_filenames: false
+  # The bin wrappers must still load the bundles (an ESM bundle cannot be `require`d).
+  - id: smoke-bin
+    name: bin/commit-me and bin/pre-commit-me run
+    entry: node scripts/smoke-bin.mjs
+    language: system
+    files: ^(bin/|lib/|package\.json$)
+    pass_filenames: false
