@@ -9,10 +9,10 @@ import * as core from "@actions/core";
 import * as github from "@actions/github";
 import { Commit, ConventionalCommit } from "@dev-build-deploy/commit-it";
 
-import { Configuration } from "../configuration";
-import { GitHubSource } from "../datasources";
-import { updatePullRequestLabels } from "../github";
-import { validateCommits, validatePullRequest } from "../validator";
+import { Configuration } from "../configuration.js";
+import { GitHubSource } from "../datasources.js";
+import { updatePullRequestLabels } from "../github.js";
+import { validateCommits, validatePullRequest } from "../validator.js";
 
 /**
  * Determines the label to be applied to the pull request.

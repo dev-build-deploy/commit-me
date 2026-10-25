@@ -6,8 +6,8 @@
 import { Commit, ConventionalCommit } from "@dev-build-deploy/commit-it";
 import { DiagnosticsMessage, FixItHint } from "@dev-build-deploy/diagnose-it";
 
-import { Configuration } from "./configuration";
-import { isGitMergeMessage } from "./merge";
+import { Configuration } from "./configuration.js";
+import { isGitMergeMessage } from "./merge.js";
 
 /**
  * Validates a single commit message against the Conventional Commit specification.

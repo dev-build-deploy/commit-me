@@ -3,4 +3,4 @@
 // SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
 // SPDX-License-Identifier: MIT
 
-require('../lib/cli/index.js');
+import '../lib/cli/index.js';
