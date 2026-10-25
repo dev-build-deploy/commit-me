@@ -10,12 +10,19 @@ const CONFIG = JSON.stringify({ types: ["chore", "docs"], scopes: ["cli", "deps"
 /** The engine below the plugin: a repo with a config, optionally mid-merge, and a stand-in for the validator. */
 function engine(on: any, opts: { merge?: boolean } = {}) {
   const ran: string[][] = [];
+  let written = "";
+  on("fs.write", (_: any, e: any) => {
+    written = e.text;
+    return { value: undefined };
+  });
   on("fs.exists", (_: any, e: any) => ({ value: !e.path.endsWith("MERGE_HEAD") }));
   on("fs.read", (_: any, e: any) => ({ value: e.path.endsWith("/.commit-me.json") ? CONFIG : "chore: from a file" }));
   on("process.run", (_: any, e: any) => {
     if (e.argv[0] === "git") return { value: { exitCode: opts.merge ? 0 : 1, stdout: "", stderr: "" } };
+    if (e.argv[0] === "mktemp") return { value: { exitCode: 0, stdout: "/tmp/msg-1\n", stderr: "" } };
+    if (e.argv[0] === "rm") return { value: { exitCode: 0, stdout: "", stderr: "" } };
     ran.push(e.argv);
-    const msg: string = e.init?.stdin ?? "";
+    const msg = written;
     const ok = /^(feat|fix|chore|docs)(\((cli|deps)\))?!?: /.test(msg);
     return {
       value: {
