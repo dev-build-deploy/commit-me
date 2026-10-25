@@ -11,6 +11,7 @@ import { Command } from "commander";
 
 import { Configuration } from "../configuration";
 import { FileSource } from "../datasources";
+import { isMergeInProgress } from "../merge";
 import { validateCommits } from "../validator";
 
 const program = new Command();
@@ -24,6 +25,9 @@ program
   .option("-c, --config <file>", "The configuration file to use.")
   .argument("<file>", "The file containing the commit messages to validate.")
   .action(async file => {
+    // Merge commits are skipped, consistent with the validation of the commit history
+    if (isMergeInProgress()) return;
+
     // Set the global configuration
     const datasource = new FileSource(file);
     await Configuration.getInstance().fromDatasource(datasource, program.opts().config);

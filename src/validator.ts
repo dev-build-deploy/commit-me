@@ -7,6 +7,7 @@ import { Commit, ConventionalCommit } from "@dev-build-deploy/commit-it";
 import { DiagnosticsMessage, FixItHint } from "@dev-build-deploy/diagnose-it";
 
 import { Configuration } from "./configuration";
+import { isGitMergeMessage } from "./merge";
 
 /**
  * Validates a single commit message against the Conventional Commit specification.
@@ -65,5 +66,7 @@ export function validatePullRequest(pullrequest: Commit, commits: ConventionalCo
  * @see https://www.conventionalcommits.org/en/v1.0.0/
  */
 export function validateCommits(commits: Commit[]): ConventionalCommit[] {
-  return commits.filter(commit => !commit.isFixupCommit && !commit.isMergeCommit).map(commit => validateCommit(commit));
+  return commits
+    .filter(commit => !commit.isFixupCommit && !commit.isMergeCommit && !isGitMergeMessage(commit.subject))
+    .map(commit => validateCommit(commit));
 }
