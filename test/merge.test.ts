@@ -19,7 +19,7 @@ describe("Merge subjects", () => {
 });
 
 describe("Merge in progress", () => {
-  const git = (cwd: string, ...args: string[]) =>
+  const git = (cwd: string, ...args: string[]): Buffer =>
     execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@t", ...args], { cwd, stdio: "ignore" });
 
   test("MERGE_HEAD detection", () => {
