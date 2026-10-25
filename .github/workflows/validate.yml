@@ -27,3 +27,6 @@ jobs:
 
       - name: Run tests
         run: npm run test
+
+      - name: Smoke-test the committed bundles (CLI and pre-commit hook)
+        run: npm run test:bin

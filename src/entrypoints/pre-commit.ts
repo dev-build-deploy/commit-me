@@ -9,10 +9,10 @@ import os from "os";
 
 import { Command } from "commander";
 
-import { Configuration } from "../configuration";
-import { FileSource } from "../datasources";
-import { isMergeInProgress } from "../merge";
-import { validateCommits } from "../validator";
+import { Configuration } from "../configuration.js";
+import { FileSource } from "../datasources.js";
+import { isMergeInProgress } from "../merge.js";
+import { validateCommits } from "../validator.js";
 
 const program = new Command();
 

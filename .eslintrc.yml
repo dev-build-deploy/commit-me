@@ -1,6 +1,9 @@
 # SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
 # SPDX-License-Identifier: CC0-1.0
 ---
+ignorePatterns:
+  - hooks/
+
 plugins:
   - jest
   - "@typescript-eslint"
@@ -14,7 +17,6 @@ extends:
 env:
   node: true
   es2021: true
-  commonjs: true
   jest/globals: true
 
 settings:
@@ -25,6 +27,7 @@ settings:
 parser: "@typescript-eslint/parser"
 parserOptions:
   ecmaVersion: latest
+  sourceType: module
   project: "./tsconfig.json"
 
 rules:
@@ -87,8 +90,5 @@ rules:
       alphabetize:
         order: asc
         caseInsensitive: true
-  import/extensions: # see https://github.com/import-js/eslint-plugin-import/blob/HEAD/docs/rules/extensions.md
-    - error
-    - never
-    - pattern:
-        json: ignorePackages
+  # nodenext ESM: tsc itself requires the runtime extension on relative imports ("./datasources.js", TS2835)
+  import/extensions: off

@@ -3,13 +3,42 @@
  * SPDX-License-Identifier: MIT
  */
 
-import * as core from "@actions/core";
 import * as github from "@actions/github";
+import { jest } from "@jest/globals";
 
-import { Configuration } from "../src/configuration";
-import { FileSource, GitHubSource, GitSource } from "../src/datasources";
+// ESM: module namespaces are read-only (spying on "@actions/core" fails) and jest.mock() is not hoisted, so the
+// data sources are mocked with unstable_mockModule before the modules under test are imported, and the action
+// inputs are set the way the runner does: INPUT_<NAME> environment variables.
+jest.unstable_mockModule("../src/datasources.js", () => {
+  class MockSource {
+    async getCommitMessages(): Promise<[]> {
+      return [];
+    }
+    async getConfigurationFile(_path: string): Promise<string | undefined> {
+      return undefined;
+    }
+  }
+  return {
+    FileSource: class FileSource extends MockSource {
+      constructor(_file: string) {
+        super();
+      }
+    },
+    GitSource: class GitSource extends MockSource {},
+    GitHubSource: class GitHubSource extends MockSource {},
+  };
+});
 
-jest.mock("../src/datasources");
+const { Configuration } = await import("../src/configuration.js");
+const { FileSource, GitHubSource, GitSource } = await import("../src/datasources.js");
+
+/** Sets the GitHub Action inputs (and clears the others) as the runner would. */
+function setInputs(inputs: Record<string, string>): void {
+  for (const name of ["include-commits", "update-labels", "scopes", "types", "token"]) {
+    delete process.env[`INPUT_${name.toUpperCase()}`];
+  }
+  for (const [name, value] of Object.entries(inputs)) process.env[`INPUT_${name.toUpperCase()}`] = value;
+}
 
 describe("FileSource", () => {
   test("No Configuration file", async () => {
@@ -28,7 +57,7 @@ describe("FileSource", () => {
 
     const datasource = new FileSource("");
     // Mock the getConfigurationFile method
-    datasource.getConfigurationFile = jest.fn().mockResolvedValue(`{
+    datasource.getConfigurationFile = jest.fn<() => Promise<string | undefined>>().mockResolvedValue(`{
       "includeCommits": false,
       "includePullRequest": true,
       "updatePullRequestLabels": true,
@@ -65,7 +94,7 @@ describe("GitSource", () => {
 
     const datasource = new GitSource();
     // Mock the getConfigurationFile method
-    datasource.getConfigurationFile = jest.fn().mockResolvedValue(`{
+    datasource.getConfigurationFile = jest.fn<() => Promise<string | undefined>>().mockResolvedValue(`{
       "githubAction": {
         "includeCommits": false,
         "includePullRequest": true,
@@ -90,8 +119,7 @@ describe("GitSource", () => {
 describe("GitHubSource", () => {
   test("Auto Detect: No merge strategy configuration", async () => {
     // Disable the GitHub Action inputs
-    jest.spyOn(core, "getInput").mockReturnValue("");
-    jest.spyOn(core, "getBooleanInput").mockReturnValue(false);
+    setInputs({});
 
     // Set the payload
     github.context.payload.pull_request = { number: 1, base: { repo: {} } };
@@ -102,8 +130,7 @@ describe("GitHubSource", () => {
 
   test("Auto Detect: allow rebase merge", async () => {
     // Disable the GitHub Action inputs
-    jest.spyOn(core, "getInput").mockReturnValue("");
-    jest.spyOn(core, "getBooleanInput").mockReturnValue(false);
+    setInputs({});
 
     // Set the payload
     github.context.payload.pull_request = {
@@ -119,8 +146,7 @@ describe("GitHubSource", () => {
 
   test("Auto Detect: disallow rebase merge", async () => {
     // Disable the GitHub Action inputs
-    jest.spyOn(core, "getInput").mockReturnValue("");
-    jest.spyOn(core, "getBooleanInput").mockReturnValue(false);
+    setInputs({});
 
     // Set the payload
     github.context.payload.pull_request = {
@@ -136,11 +162,10 @@ describe("GitHubSource", () => {
 
   test("Configuration file only", async () => {
     // Disable the GitHub Action inputs
-    jest.spyOn(core, "getInput").mockReturnValue("");
-    jest.spyOn(core, "getBooleanInput").mockReturnValue(false);
+    setInputs({});
 
     const datasource = new GitHubSource();
-    datasource.getConfigurationFile = jest.fn().mockResolvedValue(`{
+    datasource.getConfigurationFile = jest.fn<() => Promise<string | undefined>>().mockResolvedValue(`{
       "githubAction": {
         "includeCommits": true,
         "includePullRequest": true,
@@ -170,23 +195,7 @@ describe("GitHubSource", () => {
   });
 
   test("Inputs only", async () => {
-    jest.spyOn(core, "getInput").mockImplementation((name: string) => {
-      if (name === "include-commits") return "true";
-      if (name === "update-labels") return "true";
-      return "";
-    });
-
-    jest.spyOn(core, "getBooleanInput").mockImplementation((name: string) => {
-      if (name === "include-commits") return true;
-      if (name === "update-labels") return true;
-      return false;
-    });
-
-    jest.spyOn(core, "getMultilineInput").mockImplementation((name: string) => {
-      if (name === "scopes") return ["test-scope"];
-      if (name === "types") return ["test-type"];
-      return [];
-    });
+    setInputs({ "include-commits": "true", "update-labels": "true", scopes: "test-scope", types: "test-type" });
 
     // Set the payload
     github.context.payload.pull_request = {
@@ -208,26 +217,10 @@ describe("GitHubSource", () => {
   });
 
   test("Inputs and Configuration", async () => {
-    jest.spyOn(core, "getInput").mockImplementation((name: string) => {
-      if (name === "include-commits") return "false";
-      if (name === "update-labels") return "false";
-      return "";
-    });
-
-    jest.spyOn(core, "getBooleanInput").mockImplementation((name: string) => {
-      if (name === "include-commits") return false;
-      if (name === "update-labels") return false;
-      return false;
-    });
-
-    jest.spyOn(core, "getMultilineInput").mockImplementation((name: string) => {
-      if (name === "scopes") return ["test-scope"];
-      if (name === "types") return ["test-type"];
-      return [];
-    });
+    setInputs({ "include-commits": "false", "update-labels": "false", scopes: "test-scope", types: "test-type" });
 
     const datasource = new GitHubSource();
-    datasource.getConfigurationFile = jest.fn().mockResolvedValue(`{
+    datasource.getConfigurationFile = jest.fn<() => Promise<string | undefined>>().mockResolvedValue(`{
       "githubAction": {
         "includeCommits": true,
         "includePullRequest": true,
