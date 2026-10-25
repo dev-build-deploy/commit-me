@@ -16,7 +16,8 @@
     "url": "https://github.com/dev-build-deploy/commit-me/issues"
   },
   "scripts": {
-    "build": "run-p build:*",
+    "build": "run-p build:* && npm run check:bundle",
+    "check:bundle": "node scripts/check-bundle.mjs lib",
     "build:cli": "ncc build -o lib/cli src/entrypoints/cli.ts",
     "build:action": "ncc build -o lib/action src/entrypoints/action.ts",
     "build:pre-commit": "ncc build -o lib/precommit src/entrypoints/pre-commit.ts",
