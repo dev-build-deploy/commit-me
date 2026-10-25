@@ -2,6 +2,7 @@
   "name": "commit-me",
   "version": "0.0.1",
   "private": false,
+  "type": "module",
   "description": "Conventional Commit message validation",
   "author": "Kevin de Jong",
   "license": "MIT",
@@ -21,25 +22,28 @@
     "build:cli": "ncc build -o lib/cli src/entrypoints/cli.ts",
     "build:action": "ncc build -o lib/action src/entrypoints/action.ts",
     "build:pre-commit": "ncc build -o lib/precommit src/entrypoints/pre-commit.ts",
-    "test": "jest --coverage",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "lint": "eslint --ext .ts .",
     "format": "prettier --write **/*.ts && prettier --write **/**/*.ts",
-    "prepare": "node -e \"if(process.env.CI)process.exit(0);const r=require('child_process').spawnSync('pre-commit',['install','--hook-type','pre-commit','--hook-type','commit-msg'],{stdio:'inherit'});if(r.error)console.log('hint: install pre-commit (https://pre-commit.com) to get the git hooks')\""
+    "prepare": "node -e \"if(process.env.CI)process.exit(0);const r=require('child_process').spawnSync('pre-commit',['install','--hook-type','pre-commit','--hook-type','commit-msg'],{stdio:'inherit'});if(r.error)console.log('hint: install pre-commit (https://pre-commit.com) to get the git hooks')\"",
+    "test:bin": "node scripts/smoke-bin.mjs"
   },
   "bin": {
     "commit-me": "./bin/commit-me",
     "pre-commit-me": "./bin/pre-commit-me"
   },
   "dependencies": {
-    "@actions/core": "^1",
-    "@actions/github": "^6",
+    "@actions/core": "^3",
+    "@actions/github": "^9",
     "@dev-build-deploy/commit-it": "^2",
     "@dev-build-deploy/diagnose-it": "^1",
+    "@octokit/request-error": "^7",
     "commander": "^12",
     "simple-git": "^3"
   },
   "devDependencies": {
-    "@octokit/openapi-types": "^19",
+    "@jest/globals": "^29",
+    "@octokit/openapi-types": "^27",
     "@types/jest": "^29",
     "@types/node": "^24",
     "@typescript-eslint/eslint-plugin": "^8",
