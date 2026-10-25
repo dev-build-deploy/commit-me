@@ -1,0 +1,5 @@
+{
+  "name": "commit-me",
+  "version": "0.1.0",
+  "description": "Checks Conventional Commit messages with commit-me before git commit runs, so CI does not reject them afterwards."
+}
