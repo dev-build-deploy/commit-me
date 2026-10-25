@@ -258,3 +258,24 @@ describe("Ignore fixup and merge commits", () => {
     expect(result.length).toBe(0);
   });
 });
+
+describe("Skip merge commits", () => {
+  test.each([
+    "Merge branch 'feature'",
+    "Merge branch 'feature' into main",
+    "Merge branches 'a' and 'b'",
+    "Merge remote-tracking branch 'origin/main'",
+    "Merge commit 'abc123'",
+    "Merge tag 'v1.0.0'",
+    "Merge pull request #12 from owner/branch",
+    "fixup! feat: Add new feature",
+  ])("%s", message => {
+    expect(validator.validateCommits([Commit.fromString({ hash: "0a0b0c0d", message })])).toHaveLength(0);
+  });
+
+  test("Merge-like subject that is not a merge is still validated", () => {
+    expect(
+      validator.validateCommits([Commit.fromString({ hash: "0a0b0c0d", message: "Merging things" })])
+    ).toHaveLength(1);
+  });
+});
