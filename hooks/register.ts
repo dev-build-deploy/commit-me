@@ -126,12 +126,20 @@ export const register: Register = on => {
     const cli = `${$.plugin.root}/bin/pre-commit-me`;
     if (!(await $.fs.exists(`${$.plugin.root}/lib/precommit/index.js`))) return note("commit-me is not built");
 
-    const args = ["node", cli, ...(config ? ["--config", config] : []), "/dev/stdin"];
+    // A message file, not /dev/stdin: on Linux a child's stdin is a socket, which open("/dev/stdin") rejects (ENXIO).
+    let tmp: string;
     let run;
     try {
-      run = await $.process.run(args, { stdin: message });
+      tmp = (await $.process.run(["mktemp"])).stdout.trim();
+      await $.fs.write(tmp, message);
+      const args = ["node", cli, ...(config ? ["--config", config] : []), tmp];
+      try {
+        run = await $.process.run(args);
+      } finally {
+        await $.process.run(["rm", "-f", tmp]).catch(() => undefined);
+      }
     } catch {
-      return note("node is not available");
+      return note("node or mktemp is not available");
     }
     if (run.exitCode === 0) return next(e);
 

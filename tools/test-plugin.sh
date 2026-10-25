@@ -9,5 +9,5 @@ set -e
 root=$(cd "$(dirname "$0")/.." && pwd)
 stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT
-cp -R "$root/.claude-plugin" "$root/hooks" "$root/bin" "$root/lib" "$stage/"
+cp -R "$root/.claude-plugin" "$root/hooks" "$root/package.json" "$root/bin" "$root/lib" "$stage/"
 claude plugin test "$stage"
