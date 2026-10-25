@@ -26,7 +26,8 @@
     "lint": "eslint --ext .ts .",
     "format": "prettier --write **/*.ts && prettier --write **/**/*.ts",
     "prepare": "node -e \"if(process.env.CI)process.exit(0);const r=require('child_process').spawnSync('pre-commit',['install','--hook-type','pre-commit','--hook-type','commit-msg'],{stdio:'inherit'});if(r.error)console.log('hint: install pre-commit (https://pre-commit.com) to get the git hooks')\"",
-    "test:bin": "node scripts/smoke-bin.mjs"
+    "test:bin": "node scripts/smoke-bin.mjs",
+    "test:plugin": "sh tools/test-plugin.sh"
   },
   "bin": {
     "commit-me": "./bin/commit-me",
