@@ -86,6 +86,7 @@ jobs:
     steps:
       - uses: dev-build-deploy/commit-me@v0
         with:
+          token: ${{ github.token }}  # Required to retrieve the commits associated with your Pull Request
           update-labels: false  # OPTIONAL; do not update the Pull Request labels based on the Conventional Commits information.
           include-commits: false  # OPTIONAL; enforces the exclusion of commits associated with your Pull Request
           config: '.github/.commit-me.json' # OPTIONAL; by default it will look in the root of your repository
