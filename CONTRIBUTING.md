@@ -21,7 +21,8 @@ We'd also love PRs. If you're thinking of a large PR, we advise opening up an is
 ## Submitting a pull request
 
 1. [Fork][fork] and clone the repository.
-1. Configure and install the dependencies: `npm install`. This also installs the git hooks (commit-me, reuse-me, actionlint) through [pre-commit](https://pre-commit.com), when it is on your PATH: install it first (`brew install pre-commit actionlint`). Without npm: `pre-commit install --hook-type pre-commit --hook-type commit-msg`.
+1. Configure and install the dependencies: `npm install`.
+1. Install the git hooks (commit-me, reuse-me, actionlint) through [pre-commit](https://pre-commit.com): install it first (`brew install pre-commit actionlint`), then run `npm run setup-hooks` (the same as `pre-commit install --hook-type pre-commit --hook-type commit-msg`). `npm install` does not install them: a `prepare` script would also run when this package is installed as a dependency or as a pre-commit hook, and there it broke the install and replaced the consuming repository's git hooks.
 1. Make sure the tests pass on your machine: `npm test`, note: these tests also apply the linter, so there's no need to lint separately.
 1. Create a new branch: `git checkout -b my-branch-name`.
 1. Make your change, add tests, and make sure the tests still pass.
